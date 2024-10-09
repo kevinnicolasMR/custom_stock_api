@@ -3,7 +3,7 @@
 Plugin Name: WP Stock Multimedia
 Description: Sistema de stock multimedia privado con integración a Google Drive.
 Version: 1.0
-Author: Tu Nombre
+Author: Kevin Nicolas Medina Robles
 */
 
 if (!defined('ABSPATH')) exit; // Evitar acceso directo
