@@ -1,9 +1,9 @@
-<?php
+<?php 
 // Asegúrate de incluir la conexión con Google API (api-connection.php)
 require_once plugin_dir_path(__FILE__) . 'api-connection.php';
 
-// Función para mostrar las carpetas seleccionadas en el front-end
-function display_drive_folders($atts) {
+// Función para mostrar los títulos de las carpetas seleccionadas en el front-end
+function display_drive_folders_titles($atts) {
     // Asegúrate de tener el ID de las carpetas en los atributos
     $atts = shortcode_atts(array(
         'ids' => ''
@@ -16,74 +16,107 @@ function display_drive_folders($atts) {
 
     // Conectar a Google Drive
     $driveService = connect_to_google_drive();
-    $folderNumbers = explode(',', $atts['ids']); // IDs serán los números de 3 cifras
-    $output = '<h2>Contenido de Google Drive (Carpetas Seleccionadas)</h2>';
+    $folderIds = explode(',', $atts['ids']); // IDs de las carpetas
+    $output = '<div id="folder-list"><h2>Carpetas disponibles:</h2>';
 
-    // Obtener el mapeo de la base de datos
-    $folder_map = get_option('drive_folder_map', []);
+    // Generar títulos de las carpetas
+    foreach ($folderIds as $folderId) {
+        $folderId = trim($folderId); // Limpia cualquier espacio en blanco
+        try {
+            // Obtener la información de la carpeta por su ID
+            $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
+
+            // Crear el enlace que al hacer clic mostrará el contenido de la carpeta
+            $output .= '<div class="folder-title" data-folder-id="' . esc_attr($folderId) . '">';
+            $output .= esc_html($folder->name);  // Muestra el nombre de la carpeta
+            $output .= '</div>';
+        } catch (Exception $e) {
+            $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
+        }
+    }
+
+    $output .= '</div>';
+    // Div donde se mostrará el contenido de la carpeta seleccionada
+    $output .= '<div id="folder-content"></div>';
+
+    // Agregar script para manejar el clic y mostrar el contenido
+    $output .= '
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".folder-title").forEach(function(folder) {
+                folder.addEventListener("click", function() {
+                    var folderId = this.getAttribute("data-folder-id");
+                    var contentDiv = document.getElementById("folder-content");
+
+                    // Limpiar el contenido previo
+                    contentDiv.innerHTML = "Cargando...";
+
+                    // Hacer la solicitud AJAX para obtener el contenido de la carpeta
+                    fetch("' . admin_url('admin-ajax.php') . '?action=get_folder_content&folder_id=" + folderId)
+                    .then(response => response.text())
+                    .then(data => contentDiv.innerHTML = data)
+                    .catch(error => contentDiv.innerHTML = "Error al cargar el contenido.");
+                });
+            });
+        });
+    </script>';
+
+    return $output;
+}
+
+// Función para manejar la solicitud AJAX y devolver el contenido de la carpeta
+function get_folder_content() {
+    // Verificar que se proporciona un ID de carpeta
+    if (!isset($_GET['folder_id'])) {
+        echo 'No se proporcionó un ID de carpeta.';
+        wp_die();
+    }
+
+    // Sanitize el ID de carpeta que viene de la solicitud
+    $folderId = sanitize_text_field($_GET['folder_id']);
+    
+    // Conectar a Google Drive
+    $driveService = connect_to_google_drive();
 
     try {
-        // Invertir el mapeo para obtener los IDs a partir de los números
-        $folderIds = array_map(function($num) use ($folder_map) {
-            return isset($folder_map[$num]) ? $folder_map[$num] : null;
-        }, $folderNumbers);
+        // Hacer la consulta para obtener los archivos dentro de la carpeta usando el ID de la carpeta
+        $query = sprintf("'%s' in parents", $folderId);  // Usar el ID de la carpeta
 
-        foreach ($folderIds as $folderId) {
-            if (!$folderId) {
-                continue; // Si no hay un ID válido, saltamos esta iteración
+        $optParams = array(
+            'pageSize' => 20,
+            'fields' => "nextPageToken, files(id, name, mimeType, webContentLink)" // Obtener archivos
+        );
+
+        // Listar los archivos que están en la carpeta con el ID proporcionado
+        $results = $driveService->files->listFiles(array('q' => $query, 'pageSize' => 20, 'fields' => 'files(id, name)'));
+
+        if (count($results->files) == 0) {
+            echo '<p>No se encontraron archivos en esta carpeta.</p>';
+        } else {
+            echo '<ul>';
+            foreach ($results->files as $file) {
+                echo '<li>' . esc_html($file->name) . '</li>';  // Muestra el nombre de cada archivo
             }
-
-            $query = sprintf("'%s' in parents", esc_attr($folderId));
-            $optParams = array(
-                'pageSize' => 20,
-                'fields' => "nextPageToken, files(id, name, mimeType, webContentLink)"
-            );
-
-            $results = $driveService->files->listFiles(array_merge($optParams, ['q' => $query]));
-
-            if (count($results->files) == 0) {
-                $output .= '<p>No se encontraron archivos en la carpeta con ID: ' . esc_html($folderId) . '</p>';
-            } else {
-                $output .= '<h3>Carpeta ID: ' . esc_html($folderId) . '</h3><ul>';
-                foreach ($results->files as $file) {
-                    if (strpos($file->mimeType, 'image/') === 0) {
-                        $output .= '<li>' . esc_html($file->name) . ' - <a href="' . esc_url($file->webContentLink) . '" target="_blank">Ver imagen</a></li>';
-                    } else {
-                        $output .= '<li>' . esc_html($file->name) . '</li>';
-                    }
-                }
-                $output .= '</ul>';
-            }
+            echo '</ul>';
         }
-        return $output;
     } catch (Exception $e) {
-        return 'Error al obtener archivos: ' . esc_html($e->getMessage());
-    }
-}
-
-// Función para mapear IDs a números de 3 cifras
-function map_folders_to_numbers($folderIds) {
-    $folder_map = []; // Mapeo nuevo
-
-    foreach ($folderIds as $index => $folderId) {
-        // Genera un número de 3 cifras basado en el índice
-        $number = str_pad($index + 1, 3, '0', STR_PAD_LEFT); // Ej: 001, 002, ...
-        $folder_map[$number] = $folderId; // Mapeamos el número al ID de la carpeta
+        // Capturar y mostrar cualquier error que ocurra al intentar obtener los archivos
+        echo 'Error al obtener archivos: ' . esc_html($e->getMessage());
     }
 
-    // Guarda el mapeo en la base de datos
-    update_option('drive_folder_map', $folder_map);
+    wp_die(); // Termina la ejecución correctamente después de la respuesta
 }
+
+// Registrar la función para manejar solicitudes AJAX autenticadas y no autenticadas
+add_action('wp_ajax_get_folder_content', 'get_folder_content');
+add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
 
 // Función que se llama al generar el shortcode
 function generate_shortcode($selectedFolders) {
-    map_folders_to_numbers($selectedFolders); // Mapeamos e insertamos en la base de datos
-    $folderNumbers = array_keys(get_option('drive_folder_map')); // Obtenemos los números de 3 cifras
-    $shortcode = '[drive_folders ids="' . implode(',', $folderNumbers) . '"]'; // Generamos el shortcode
-
-    return $shortcode; // Devolver el shortcode generado
+    // Usar los IDs de las carpetas seleccionadas para crear el shortcode
+    $shortcode = '[drive_folders ids="' . implode(',', $selectedFolders) . '"]';
+    return $shortcode;
 }
 
 // Registra el shortcode
-add_shortcode('drive_folders', 'display_drive_folders');
-
+add_shortcode('drive_folders', 'display_drive_folders_titles');
