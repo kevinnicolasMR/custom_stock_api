@@ -1,13 +1,16 @@
 {
-    "name": "ana-luquez/custom_stock_api",
-    "description": "Proyecto de stock fotografico con api de google drive",
+    "name": "equipo/custom_stock_api",
     "require": {
         "google/apiclient": "^2.17"
     },
+    "autoload": {
+        "psr-4": {
+            "Equipo\\CustomStockApi\\": "src/"
+        }
+    },
     "authors": [
         {
-            "name": "kevinnicolasMR",
-            "email": "kevinnicolasmr@gmail.com"
+            "name": "Kevin Medina"
         }
     ]
 }
