@@ -16,42 +16,51 @@ function display_drive_folders_menu($atts) {
     // Conectar a Google Drive
     $driveService = connect_to_google_drive();
     $folderIds = explode(',', $atts['ids']); // IDs de las carpetas
-    $output = '<div id="folder-menu"><h2>Carpetas disponibles:</h2><ul>';
+
+    // Creamos un único div contenedor que envolverá tanto el menú como el contenido
+    $output = '<div id="drive-folders-container">';
 
     // Generar títulos de las carpetas principales
+    $output .= '<div id="folder-menu">';
     foreach ($folderIds as $folderId) {
         $folderId = trim($folderId); // Limpia cualquier espacio en blanco
         try {
             // Obtener la información de la carpeta por su ID
             $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
 
-            // Crear la lista de carpetas con hover para mostrar subcarpetas
-            $output .= '<li class="menu-folder" data-folder-id="' . esc_attr($folderId) . '">';
+            // Crear el título de la carpeta principal como H2
+            $output .= '<h2 class="menu-folder" data-folder-id="' . esc_attr($folderId) . '">';
             $output .= esc_html($folder->name);  // Muestra el nombre de la carpeta principal
 
-            // Generar subcarpetas para este menú principal
-            $output .= '<ul class="submenu">';
-            
             // Obtener las subcarpetas
             $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
             $subFolders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
 
-            foreach ($subFolders->files as $subFolder) {
-                $output .= '<li class="submenu-folder" data-folder-id="' . esc_attr($subFolder->id) . '">';
-                $output .= esc_html($subFolder->name);  // Muestra el nombre de la subcarpeta
-                $output .= '</li>';
+            // Si hay subcarpetas, genera títulos H3
+            if (!empty($subFolders->files)) {
+                $output .= '<div class="submenu hiddenContent" data-parent-id="' . esc_attr($folderId) . '">';  // Usa un div en lugar de ul para subcarpetas
+                
+                foreach ($subFolders->files as $subFolder) {
+                    $output .= '<h3 class="submenu-folder" data-folder-id="' . esc_attr($subFolder->id) . '">';
+                    $output .= esc_html($subFolder->name);  // Muestra el nombre de la subcarpeta
+                    $output .= '</h3>';
+                }
+
+                $output .= '</div>';  // Cierra el div de subcarpetas
             }
 
-            $output .= '</ul>';  // Cierra el submenú
-            $output .= '</li>';  // Cierra la carpeta principal
+            $output .= '</h2>';  // Cierra el título H2 de la carpeta principal
         } catch (Exception $e) {
             $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
         }
     }
+    $output .= '</div>'; // Cierra el div del menú
 
-    $output .= '</ul></div>';
     // Div donde se mostrará el contenido de la carpeta seleccionada
     $output .= '<div id="folder-content"></div>';
+
+    // Cierra el contenedor principal
+    $output .= '</div>';
 
     // Generar la URL de admin-ajax.php de forma estática dentro del JavaScript
     $ajax_url = admin_url('admin-ajax.php');
@@ -60,10 +69,20 @@ function display_drive_folders_menu($atts) {
     $output .= '
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Manejar clics en las carpetas principales y subcarpetas
-            document.querySelectorAll(".menu-folder, .submenu-folder").forEach(function(folder) {
+            // Manejar clics en las carpetas principales
+            document.querySelectorAll(".menu-folder").forEach(function(folder) {
                 folder.addEventListener("click", function() {
                     var folderId = this.getAttribute("data-folder-id");
+
+                    // Encontrar el div submenu correspondiente al folderId
+                    var submenu = document.querySelector(".submenu[data-parent-id=\'" + folderId + "\']");
+
+                    // Si se encuentra el submenu, alternar las clases
+                    if (submenu) {
+                        submenu.classList.remove("hiddenContent");
+                        submenu.classList.add("contentVisibility");
+                    }
+
                     var contentDiv = document.getElementById("folder-content");
 
                     // Limpiar el contenido previo
@@ -82,6 +101,7 @@ function display_drive_folders_menu($atts) {
     // Devuelve el contenido
     return $output;
 }
+
 
 function get_folder_content() {
     // Verificar que se proporciona un ID de carpeta
@@ -106,28 +126,29 @@ function get_folder_content() {
         if (count($results->files) == 0) {
             echo '<p>No se encontraron archivos multimedia en esta carpeta.</p>';
         } else {
-            echo '<div class="media-preview">';
-            foreach ($results->files as $file) {
-                echo '<div class="media-item" style="display:inline-block; margin:10px;">';
+            // Aseguramos que el contenedor de las imágenes esté vacío antes de agregar nuevos elementos
+            echo '<div class="media-preview">';  // Usar flexbox para asegurar que estén alineadas correctamente
 
-                // Si el archivo es una imagen o un video
+            foreach ($results->files as $file) {
+                echo '<div class="media-item">';
+
+                // Si el archivo es una imagen
                 if (strpos($file->mimeType, 'image') !== false) {
                     // Mostrar imagen con tamaño máximo de 300x300
-                    echo '<img src="' . esc_url($file->thumbnailLink) . '" style="max-width: 300px; max-height: 300px;" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" />';
-                } elseif (strpos($file->mimeType, 'video') !== false) {
-                    // Para videos, no hay miniatura directa, pero puedes usar un enlace para verlo
-                    echo '<video controls style="max-width: 300px; max-height: 300px;">
+                    echo '<img src="' . esc_url($file->thumbnailLink) . '" style="width: 300px; height: 300px;" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" />';
+                } 
+                // Si el archivo es un video
+                elseif (strpos($file->mimeType, 'video') !== false) {
+                    echo '<video controls style="width: 300px; height: 300px;">
                             <source src="' . esc_url($file->webViewLink) . '" type="' . esc_attr($file->mimeType) . '">
                             Tu navegador no soporta la previsualización de este video.
                           </video>';
                 }
 
-                // Nombre del archivo y enlace para verlo en Drive
-                echo '<p>' . esc_html($file->name) . '</p>';
-                echo '<a href="' . esc_url($file->webViewLink) . '" target="_blank">Ver en Drive</a>';
-                echo '</div>';
+                echo '</div>';  // Cierra el div de cada media-item
             }
-            echo '</div>';
+
+            echo '</div>';  // Cierra el contenedor general de las media-preview
         }
     } catch (Exception $e) {
         // Capturar y mostrar cualquier error que ocurra al intentar obtener los archivos
@@ -173,8 +194,8 @@ function display_click_handler() {
                 // Crear la imagen en el div
                 var img = document.createElement("img");
                 img.src = imageUrl;
-                img.style.maxWidth = "90%"; // Ajustar el tamaño de la imagen
-                img.style.maxHeight = "90%"; // Ajustar el tamaño de la imagen
+                img.style.maxWidth = "100%"; // Ajustar el tamaño de la imagen
+                img.style.maxHeight = "100%"; // Ajustar el tamaño de la imagen
 
                 // Agregar un evento para cerrar el overlay al hacer clic en cualquier parte
                 overlay.addEventListener("click", function() {
