@@ -1,5 +1,5 @@
-console.log("El Script esta activo")
-
+console.log("El Script está activo");
+console.log(ajax_object.ajax_url); // Verifica si la URL es correcta
 
 document.addEventListener('DOMContentLoaded', function() {
     // Selecciona todos los elementos con la clase 'level-0'
@@ -46,38 +46,29 @@ document.addEventListener('DOMContentLoaded', function() {
             element.classList.add('hideContentMenu');
         }
     }
-});
-
-
+})
 
 jQuery(document).ready(function($) {
-    // Detectar clic en una subcarpeta
     $(document).on('click', '.subfolder', function() {
         var folderId = $(this).data('folder-id');
 
-        // Verificar si el folderId está presente
-        if (!folderId) {
-            alert('No se pudo obtener el ID de la carpeta.');
-            return;
-        }
-
-        // Realizamos la solicitud AJAX para obtener el contenido de la carpeta seleccionada
         $.ajax({
-            url: ajaxurl,  // La URL de admin-ajax.php de WordPress
+            url: ajax_object.ajax_url, // Usar ajax_object.ajax_url
             type: 'POST',
             data: {
-                action: 'get_folder_content',  // La acción registrada en PHP
-                folder_id: folderId            // El ID de la carpeta a obtener
+                action: 'get_folder_content',
+                folder_id: folderId
             },
             success: function(response) {
-                // Si la solicitud es exitosa, mostrar el contenido de la carpeta en el contenedor
-                $('#folder-content').html(response);
+                if (response.success) {
+                    $('#folder-content').html(response.data);
+                } else {
+                    console.error(response.data);
+                }
             },
-            error: function(error) {
-                console.error('Error al obtener el contenido de la carpeta:', error);
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
             }
         });
     });
 });
-
-

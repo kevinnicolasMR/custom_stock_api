@@ -29,20 +29,3 @@ function wp_stock_multimedia_deactivate() {
 }
 register_deactivation_hook(__FILE__, 'wp_stock_multimedia_deactivate');
 
-// Cargar archivos de estilos y scripts para el frontend y admin
-function wp_stock_multimedia_enqueue_scripts() {
-    wp_enqueue_style('wp-stock-multimedia-style', WP_STOCK_MULTIMEDIA_URL . 'assets/css/styles.css');
-    wp_enqueue_script('wp-stock-multimedia-script', WP_STOCK_MULTIMEDIA_URL . 'assets/js/scripts.js', array('jquery'), null, true);
-}
-add_action('wp_enqueue_scripts', 'wp_stock_multimedia_enqueue_scripts');
-
-// Cargar archivos de estilos y scripts solo para la página del admin
-function wp_stock_multimedia_admin_enqueue_scripts($hook) {
-    // Solo cargar los scripts y estilos en la página de administración de este plugin
-    if ($hook != 'toplevel_page_wp-stock-multimedia') {
-        return;
-    }
-    wp_enqueue_style('wp-stock-multimedia-admin-style', WP_STOCK_MULTIMEDIA_URL . 'assets/css/admin-styles.css');
-    wp_enqueue_script('wp-stock-multimedia-admin-script', WP_STOCK_MULTIMEDIA_URL . 'assets/js/admin-scripts.js', array('jquery'), null, true);
-}
-add_action('admin_enqueue_scripts', 'wp_stock_multimedia_admin_enqueue_scripts');
