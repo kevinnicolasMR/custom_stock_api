@@ -1,7 +1,45 @@
-<?php 
+<?php
 // Asegúrate de incluir la conexión con Google API (api-connection.php)
 require_once plugin_dir_path(__FILE__) . 'api-connection.php';
 
+// Incluir el archivo que maneja los clics
+require_once plugin_dir_path(__FILE__) . 'functions/click-handlers.php';
+
+// Función para renderizar subcarpetas de manera recursiva
+function render_subfolders($driveService, $folderId, $level = 1) {
+    $output = '<div class="subfolders">'; // Contenedor de subcarpetas
+
+    // Obtener las subcarpetas dentro de la carpeta actual
+    try {
+        $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
+        $subFolders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
+
+        // Recorrer las subcarpetas y mostrarlas
+        foreach ($subFolders->files as $subFolder) {
+            $output .= '<div class="subfolder">';
+            // Mostrar nombre y nivel
+            $output .= '<p class="folder-name level-' . esc_attr($level) . '" data-folder-id="' . esc_attr($subFolder->id) . '">';
+            $output .= esc_html($subFolder->name); // Mostrar el nombre de la subcarpeta
+            if ($level == 3) { // Solo mostrar el ID en el nivel 3
+                $output .= '<span class="folder-id">' . esc_html($subFolder->id) . '</span>'; // Mostrar el ID de la subcarpeta
+            }
+            $output .= '</p>'; // Cierra el párrafo de la subcarpeta
+
+            // Llamar a la función de manera recursiva si no se ha alcanzado el nivel 3
+            if ($level < 3) {
+                $output .= render_subfolders($driveService, $subFolder->id, $level + 1);
+            }
+            $output .= '</div>'; // Cierra el div de la subcarpeta
+        }
+    } catch (Exception $e) {
+        $output .= '<p>Error al obtener subcarpetas: ' . esc_html($e->getMessage()) . '</p>';
+    }
+
+    $output .= '</div>'; // Cierra el contenedor de subcarpetas
+    return $output;
+}
+
+// Función para mostrar las carpetas de Google Drive
 function display_drive_folders_menu($atts) {
     // Asegúrate de tener el ID de las carpetas en los atributos
     $atts = shortcode_atts(array(
@@ -17,11 +55,10 @@ function display_drive_folders_menu($atts) {
     $driveService = connect_to_google_drive();
     $folderIds = explode(',', $atts['ids']); // IDs de las carpetas
 
-    // Creamos un único div contenedor que envolverá tanto el menú como el contenido
+    // Creamos un único div contenedor que envolverá el menú
     $output = '<div id="drive-folders-container">';
-
-    // Generar títulos de las carpetas principales
     $output .= '<div id="folder-menu">';
+
     foreach ($folderIds as $folderId) {
         $folderId = trim($folderId); // Limpia cualquier espacio en blanco
         try {
@@ -29,198 +66,34 @@ function display_drive_folders_menu($atts) {
             $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
 
             // Crear el título de la carpeta principal como H2
-            $output .= '<h2 class="menu-folder" data-folder-id="' . esc_attr($folderId) . '">';
+            $output .= '<p class="folder-name level-0" data-folder-id="' . esc_attr($folderId) . '">';
             $output .= esc_html($folder->name);  // Muestra el nombre de la carpeta principal
-
-            // Obtener las subcarpetas
-            $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
-            $subFolders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
-
-            // Si hay subcarpetas, genera títulos H3
-            if (!empty($subFolders->files)) {
-                $output .= '<div class="submenu hiddenContent" data-parent-id="' . esc_attr($folderId) . '">';  // Usa un div en lugar de ul para subcarpetas
-                
-                foreach ($subFolders->files as $subFolder) {
-                    $output .= '<h3 class="submenu-folder" data-folder-id="' . esc_attr($subFolder->id) . '">';
-                    $output .= esc_html($subFolder->name);  // Muestra el nombre de la subcarpeta
-                    $output .= '</h3>';
-                }
-
-                $output .= '</div>';  // Cierra el div de subcarpetas
-            }
-
-            $output .= '</h2>';  // Cierra el título H2 de la carpeta principal
+            $output .= '</p>';  // Cierra el párrafo de la carpeta principal
+            
+            // Llamar a la función para renderizar subcarpetas
+            $output .= render_subfolders($driveService, $folderId, 1);
         } catch (Exception $e) {
             $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
         }
     }
+
     $output .= '</div>'; // Cierra el div del menú
-
-    // Div donde se mostrará el contenido de la carpeta seleccionada
-    $output .= '<div id="folder-content"></div>';
-
-    // Cierra el contenedor principal
-    $output .= '</div>';
-
-    // Generar la URL de admin-ajax.php de forma estática dentro del JavaScript
-    $ajax_url = admin_url('admin-ajax.php');
-
-    // Agregar script para manejar el clic y mostrar el contenido
-    $output .= '
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Manejar clics en las carpetas principales
-            document.querySelectorAll(".menu-folder").forEach(function(folder) {
-                folder.addEventListener("click", function() {
-                    var folderId = this.getAttribute("data-folder-id");
-
-                    // Encontrar el div submenu correspondiente al folderId
-                    var submenu = document.querySelector(".submenu[data-parent-id=\'" + folderId + "\']");
-
-                    // Si se encuentra el submenu, alternar las clases
-                    if (submenu) {
-                        submenu.classList.remove("hiddenContent");
-                        submenu.classList.add("contentVisibility");
-                    }
-
-                    var contentDiv = document.getElementById("folder-content");
-
-                    // Limpiar el contenido previo
-                    contentDiv.innerHTML = "Cargando...";
-
-                    // Hacer la solicitud AJAX para obtener el contenido de la carpeta
-                    fetch("' . esc_url($ajax_url) . '?action=get_folder_content&folder_id=" + folderId)
-                    .then(response => response.text())
-                    .then(data => contentDiv.innerHTML = data)
-                    .catch(error => contentDiv.innerHTML = "Error al cargar el contenido multimedia.");
-                });
-            });
-        });
-    </script>';
+    $output .= '<div id="folder-content"></div>'; // Div donde se mostrará el contenido de la carpeta seleccionada
+    $output .= '</div>'; // Cierra el contenedor principal
 
     // Devuelve el contenido
     return $output;
 }
 
-
-function get_folder_content() {
-    // Verificar que se proporciona un ID de carpeta
-    if (!isset($_GET['folder_id'])) {
-        echo 'No se proporcionó un ID de carpeta.';
-        wp_die();
-    }
-
-    // Sanitize el ID de la carpeta que viene de la solicitud
-    $folderId = sanitize_text_field($_GET['folder_id']);
-    
-    // Conectar a Google Drive
-    $driveService = connect_to_google_drive();
-
-    try {
-        // Hacer la consulta para obtener SOLO archivos multimedia dentro de la carpeta (imágenes/videos)
-        $query = sprintf("'%s' in parents and (mimeType contains 'image/' or mimeType contains 'video/')", $folderId);  // Usar el ID de la carpeta para obtener solo imágenes y videos
-
-        // Listar los archivos dentro de la carpeta (solo multimedia)
-        $results = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink, webViewLink)'));
-
-        if (count($results->files) == 0) {
-            echo '<p>No se encontraron archivos multimedia en esta carpeta.</p>';
-        } else {
-            // Aseguramos que el contenedor de las imágenes esté vacío antes de agregar nuevos elementos
-            echo '<div class="media-preview">';  // Usar flexbox para asegurar que estén alineadas correctamente
-
-            foreach ($results->files as $file) {
-                echo '<div class="media-item">';
-
-                // Si el archivo es una imagen
-                if (strpos($file->mimeType, 'image') !== false) {
-                    // Mostrar imagen con tamaño máximo de 300x300
-                    echo '<img src="' . esc_url($file->thumbnailLink) . '" style="width: 300px; height: 300px;" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" />';
-                } 
-                // Si el archivo es un video
-                elseif (strpos($file->mimeType, 'video') !== false) {
-                    echo '<video controls style="width: 300px; height: 300px;">
-                            <source src="' . esc_url($file->webViewLink) . '" type="' . esc_attr($file->mimeType) . '">
-                            Tu navegador no soporta la previsualización de este video.
-                          </video>';
-                }
-
-                echo '</div>';  // Cierra el div de cada media-item
-            }
-
-            echo '</div>';  // Cierra el contenedor general de las media-preview
-        }
-    } catch (Exception $e) {
-        // Capturar y mostrar cualquier error que ocurra al intentar obtener los archivos
-        echo 'Error al obtener archivos multimedia: ' . esc_html($e->getMessage());
-    }
-
-    wp_die(); // Termina la ejecución correctamente después de la respuesta
+// Encolar el archivo CSS para el estilo del menú
+function enqueue_custom_styles() {
+    wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
 }
-
-// Encolar el archivo JavaScript
-function enqueue_custom_scripts() {
-    wp_enqueue_script('image-preview-script', plugin_dir_url(__FILE__) . 'image-preview.js', array(), null, true);
-    // Agregar el script para manejar el clic en las imágenes
-    add_action('wp_footer', 'display_click_handler');
-}
-add_action('wp_enqueue_scripts', 'enqueue_custom_scripts');
-
-function display_click_handler() {
-    // Agregar el script para manejar el clic en las imágenes
-    echo '
-    <script>
-        // Manejar el clic en las imágenes
-        document.addEventListener("click", function(event) {
-            if (event.target.classList.contains("image-item")) {
-                console.log("Imagen clicada"); // Mostrar mensaje en la consola
-
-                // Obtener la URL de la imagen clicada
-                var imageUrl = event.target.getAttribute("data-image-url");
-
-                // Crear un div superpuesto
-                var overlay = document.createElement("div");
-                overlay.style.position = "fixed";
-                overlay.style.top = "0";
-                overlay.style.left = "0";
-                overlay.style.width = "100%";
-                overlay.style.height = "100%";
-                overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)"; // Fondo semi-transparente
-                overlay.style.display = "flex";
-                overlay.style.justifyContent = "center";
-                overlay.style.alignItems = "center";
-                overlay.style.zIndex = "1000"; // Asegura que esté en la parte superior
-
-                // Crear la imagen en el div
-                var img = document.createElement("img");
-                img.src = imageUrl;
-                img.style.maxWidth = "100%"; // Ajustar el tamaño de la imagen
-                img.style.maxHeight = "100%"; // Ajustar el tamaño de la imagen
-
-                // Agregar un evento para cerrar el overlay al hacer clic en cualquier parte
-                overlay.addEventListener("click", function() {
-                    document.body.removeChild(overlay); // Remover el overlay
-                });
-
-                // Agregar la imagen al overlay
-                overlay.appendChild(img);
-                document.body.appendChild(overlay); // Agregar el overlay al body
-            }
-        });
-    </script>';
-}
-
+add_action('wp_enqueue_scripts', 'enqueue_custom_styles');
 
 // Registrar la función para manejar solicitudes AJAX autenticadas y no autenticadas
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
-
-// Función que se llama al generar el shortcode
-function generate_shortcode($selectedFolders) {
-    // Usar los IDs de las carpetas seleccionadas para crear el shortcode
-    $shortcode = '[drive_folders ids="' . implode(',', $selectedFolders) . '"]';
-    return $shortcode;
-}
 
 // Registra el shortcode
 add_shortcode('drive_folders', 'display_drive_folders_menu');
