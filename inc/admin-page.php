@@ -3,7 +3,7 @@
 require_once plugin_dir_path(__FILE__) . 'api-connection.php';
 
 // ID de la carpeta madre (cámbialo por el ID real)
-define('MOTHER_FOLDER_ID', '1c-vP86pS3uy0JeKjO-RT5J0Fq5wHWXou'); // Reemplaza con tu ID
+define('MOTHER_FOLDER_ID', '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM'); // Reemplaza con tu ID
 
 // Función para mostrar la interfaz en el panel de administración
 function wp_drive_folders_admin_page() {
@@ -21,8 +21,8 @@ function wp_drive_folders_admin_page() {
         $results = $driveService->files->listFiles(array_merge($optParams, ['q' => $query]));
         
         // Crear la interfaz en el admin de WordPress
-        echo '<div class="wrap">';
-        echo '<h1>Carpetas de Google Drive</h1>';
+        echo '<div>';
+        echo '<h1>Carpetas disponibles en Google Drive</h1>';
 
         // Formulario para seleccionar carpetas
         echo '<form method="post" action="">'; // Acción vacía para manejar en la misma página
@@ -60,8 +60,11 @@ function wp_drive_folders_admin_page() {
         echo '</div>';
     } catch (Exception $e) {
         echo '<p>Error al obtener las carpetas: ' . esc_html($e->getMessage()) . '</p>';
+        // También podrías añadir más detalles aquí si es necesario
+        echo '<p>Por favor verifica los permisos y la configuración de la API.</p>';
     }
 }
+
 
 // Función para agregar la página al menú de administración
 function wp_drive_folders_menu() {
@@ -72,5 +75,15 @@ function wp_drive_folders_menu() {
         'drive-folders',            // Slug de la página
         'wp_drive_folders_admin_page' // Callback para el contenido de la página
     );
+
+    // Encolar el CSS para la página de administración
+    add_action('admin_enqueue_scripts', 'wp_drive_folders_admin_styles');
 }
+
+// Función para encolar los estilos de la página de administración
+function wp_drive_folders_admin_styles() {
+    wp_enqueue_style('drive-folder-admin-style', plugin_dir_url(__FILE__) . '../assets/style/admin-page.css');
+}
+
 add_action('admin_menu', 'wp_drive_folders_menu');
+

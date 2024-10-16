@@ -1,0 +1,34 @@
+#drive-folders-container{
+	display: flex;
+	width: 100%;
+}
+#folder-menu{
+	width: 50%;
+}
+#folder-content{
+	width: 50%
+}
+.media-preview{
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center
+}
+.media-item{
+	display: flex !important;
+	margin: 5px;
+}
+
+.menu-folder{
+	font-size: 20px;
+	line-height: 23px;
+	margin-bottom: 10px
+}
+
+.submenu-folder{
+	font-size: 15px;
+	margin: 0px !important;
+	line-height: 20px
+}
+
+
