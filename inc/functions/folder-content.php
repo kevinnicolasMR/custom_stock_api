@@ -25,7 +25,8 @@ function get_folder_content() {
                     
                     if (strpos($mimeType, 'image/') === 0) {
                         // Para imágenes, muestra la miniatura usando el thumbnailLink
-                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" style="width: 300px; height: 300px;" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '">';
+                            $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '" style="width: 300px; height: 300px;">';
+
                     } elseif (strpos($mimeType, 'video/') === 0) {
                         // Para videos, muestra la miniatura
                         $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" style="max-width: 100%; height: auto;">';
@@ -65,4 +66,6 @@ function get_folder_content() {
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
+
+
 
