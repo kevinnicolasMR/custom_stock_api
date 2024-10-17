@@ -44,7 +44,8 @@ function display_drive_folders_menu($atts) {
             $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
         }
     }
-    
-    $output .= '</div><div id="folder-content"></div></div>';
+
+    // Div para mostrar el mensaje de carga dentro del div de contenido
+    $output .= '</div><div id="folder-content"><div id="loading-message" style="display:none;">Cargando...</div></div></div>';
     return $output;
 }

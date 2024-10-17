@@ -3,10 +3,10 @@
 	width: 100%;
 }
 #folder-menu{
-	width: 50%;
+	width: 40%;
 }
 #folder-content{
-	width: 50%
+	width: 60%
 }
 .media-preview{
 	width: 100%;
@@ -29,6 +29,27 @@
 	font-size: 15px;
 	margin: 0px !important;
 	line-height: 20px
+}
+
+
+.hideContentMenu {
+    display: none; /* Oculta el contenido */
+}
+
+.visibleContentMenu {
+    display: block; /* Muestra el contenido */
+}
+
+p{
+	padding: 0px
+}
+
+.level-1{
+	padding-left: 10px;
+}
+
+.level-2{
+	padding-left: 10px;
 }
 
 

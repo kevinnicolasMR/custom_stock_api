@@ -1,81 +1,68 @@
 <?php
 require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
+// Agrega esta función para manejar la solicitud AJAX
 function get_folder_content() {
-    // Verificar que se proporciona un ID de carpeta
-    if (!isset($_POST['folder_id'])) {
-        wp_send_json_error('No se proporcionó un ID de carpeta.', 400); // Error 400: Solicitud incorrecta
-        wp_die();
-    }
+    // Verifica si se proporciona el ID de la carpeta
+    if (isset($_POST['folder_id'])) {
+        $folderId = sanitize_text_field($_POST['folder_id']); // Sanitiza el ID de la carpeta
 
-    // Sanitizar el ID de la carpeta
-    $folderId = sanitize_text_field($_POST['folder_id']);
-    
-    // Conectar a Google Drive
-    try {
+        // Conecta a Google Drive
         $driveService = connect_to_google_drive();
-    } catch (Exception $e) {
-        wp_send_json_error('Error al conectar con Google Drive: ' . esc_html($e->getMessage()), 500); // Error 500: Error del servidor
-        wp_die();
-    }
 
-    try {
-    // Consulta para obtener SOLO archivos multimedia dentro de la carpeta (imágenes/videos)
-    $query = sprintf("'%s' in parents and (mimeType contains 'image/' or mimeType contains 'video/')", $folderId);
+        try {
+            // Realiza la consulta para obtener archivos en la carpeta
+            $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos dentro de la carpeta
+            $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
-    // Listar los archivos dentro de la carpeta (solo multimedia)
-    $results = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink, webViewLink)'));
-
-    // Comprobar si hay archivos
-    if (count($results->files) == 0) {
-        // Mensaje cuando no hay contenido en la carpeta
-        $output = '<div class="media-preview"><p>No se encontraron archivos multimedia en esta carpeta.</p></div>';
-        wp_send_json_success($output); // Enviar respuesta exitosa con el mensaje
-        wp_die();
-    } else {
-        $output = '<div class="media-preview">';  // Contenedor general para todos los archivos
-        foreach ($results->files as $file) {
-            $output .= '<div class="media-item" style="display:inline-block; margin:10px;">';
-
-            // Si el archivo es una imagen
-            if (strpos($file->mimeType, 'image') !== false) {
-                // Comprobar si thumbnailLink está disponible
-                if (!empty($file->thumbnailLink)) {
-                    $output .= '<img src="' . esc_url($file->thumbnailLink) . '" style="max-width: 300px; max-height: 300px;" alt="' . esc_attr($file->name) . '" />';
-                } else {
-                    $output .= '<p>No se pudo mostrar la imagen: ' . esc_html($file->name) . '</p>';
+            // Comienza a construir el contenido a mostrar
+            $output = ''; // Asegúrate de inicializar $output
+            if (count($files->files) > 0) {
+                foreach ($files->files as $file) {
+                    // Verifica el tipo de archivo y genera el HTML correspondiente
+                    $mimeType = $file->mimeType;
+                    $output .= '<div class="file-item">';
+                    
+                    if (strpos($mimeType, 'image/') === 0) {
+                        // Para imágenes, muestra la miniatura usando el thumbnailLink
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" style="width: 300px; height: 300px;" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '">';
+                    } elseif (strpos($mimeType, 'video/') === 0) {
+                        // Para videos, muestra la miniatura
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" style="max-width: 100%; height: auto;">';
+                        $output .= '<p><a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver video</a></p>';
+                    } elseif (strpos($mimeType, 'audio/') === 0) {
+    // Crea un div con un botón "X" que cargará el audio dinámicamente
+    $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
+    
+    $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+    $output .= '<p>' . esc_html($file->name) . '</p>';
+    $output .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
+    $output .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
+    $output .= '</div>';
+                    } elseif ($mimeType === 'application/pdf') {
+                        // Para PDFs
+                        $output .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
+                    }
+                    
+                    $output .= '</div>'; // Cierra el div del archivo
                 }
-            } 
-            // Si el archivo es un video
-            elseif (strpos($file->mimeType, 'video') !== false) {
-                // Comprobar si webViewLink está disponible
-                if (!empty($file->webViewLink)) {
-                    $output .= '<video controls style="max-width: 300px; max-height: 300px;">
-                                    <source src="' . esc_url($file->webViewLink) . '" type="' . esc_attr($file->mimeType) . '">
-                                    Tu navegador no soporta la previsualización de este video.
-                                </video>';
-                } else {
-                    $output .= '<p>No se pudo reproducir el video: ' . esc_html($file->name) . '</p>';
-                }
+            } else {
+                $output .= '<p>No se encontraron archivos en esta carpeta.</p>'; // Mensaje si no hay archivos
             }
 
-            // Cerrar el contenedor del archivo individual
-            $output .= '</div>';
+            // Retorna la respuesta exitosa
+            wp_send_json_success($output);
+        } catch (Exception $e) {
+            // Maneja errores
+            wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
         }
-        $output .= '</div>';  // Cerrar el contenedor general de todos los archivos
-
-        // Enviar la respuesta con éxito
-        wp_send_json_success($output);
+    } else {
+        // Responde si no se proporciona un ID
+        wp_send_json_error('No se ha proporcionado un ID de carpeta.');
     }
-} catch (Exception $e) {
-    // Capturar y enviar cualquier error que ocurra al intentar obtener los archivos
-    wp_send_json_error('Error al obtener archivos multimedia: ' . esc_html($e->getMessage()), 500);
 }
 
-
-    wp_die(); // Termina la ejecución correctamente después de la respuesta
-}
-
-// Registrar la función para manejar solicitudes AJAX autenticadas y no autenticadas
+// Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
+

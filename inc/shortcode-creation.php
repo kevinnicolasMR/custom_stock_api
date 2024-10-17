@@ -14,12 +14,14 @@ function generate_shortcode($folderIds) {
 
 function enqueue_custom_assets() {
     wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
-    wp_enqueue_script('jquery');
+    wp_enqueue_script('jquery'); // Asegúrate de que jQuery se esté cargando
     wp_enqueue_script('custom-script', plugin_dir_url(__FILE__) . 'menu.js', array('jquery'), null, true);
 
-    $ajax_script = 'var ajaxurl = "' . admin_url('admin-ajax.php') . '";';
-    wp_add_inline_script('custom-script', $ajax_script);
+    // Localizar el script y pasar la URL de admin-ajax.php
+    wp_localize_script('custom-script', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
 }
 add_action('wp_enqueue_scripts', 'enqueue_custom_assets');
 
+
 add_shortcode('drive_folders', 'display_drive_folders_menu');
+
