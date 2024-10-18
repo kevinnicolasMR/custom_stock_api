@@ -1,12 +1,19 @@
+.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+    max-width: none; /* o cualquier otro valor que necesites */
+}
+
+
+
 #drive-folders-container{
 	display: flex;
 	width: 100%;
 }
 #folder-menu{
-	width: 40%;
+	width: 20%;
 }
 #folder-content{
-	width: 60%
+	width: 80%;
+	display: flex;
 }
 .media-preview{
 	width: 100%;

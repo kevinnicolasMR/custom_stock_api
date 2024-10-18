@@ -29,8 +29,8 @@ function get_folder_content() {
                     
                     } elseif (strpos($mimeType, 'video/') === 0) {
                         // Para videos, muestra la miniatura
-                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" style="max-width: 100%; height: auto;">';
-                        $output .= '<p><a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver video</a></p>';
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
+                     
                     } elseif (strpos($mimeType, 'audio/') === 0) {
     // Crea un div con un botón "X" que cargará el audio dinámicamente
     $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir

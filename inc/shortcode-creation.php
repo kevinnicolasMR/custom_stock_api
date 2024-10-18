@@ -17,7 +17,7 @@ function enqueue_custom_assets() {
     wp_enqueue_script('custom-script', plugin_dir_url(__FILE__) . 'functions/js/menu.js', array('jquery'), null, true);
 	
     // Cargar el nuevo script para el popup de imágenes
-    wp_enqueue_script('image-popup-script', plugin_dir_url(__FILE__) . 'functions/js/image-preview.js', array('jquery'), null, true);
+    wp_enqueue_script('image-popup-script', plugin_dir_url(__FILE__) . 'functions/js/popup-preview.js', array('jquery'), null, true);
 
     // Cargar el archivo CSS
     wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
