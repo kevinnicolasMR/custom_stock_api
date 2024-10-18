@@ -1,5 +1,5 @@
 // Verifica si la URL es correcta
-console.log("Goku is God causa");
+console.log("Menu JS activo");
 
 jQuery(document).ready(function($) {
     // Agregar un evento de clic a los elementos del menú de carpetas
