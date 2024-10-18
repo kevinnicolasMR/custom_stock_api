@@ -1,25 +1,17 @@
 jQuery(document).ready(function ($) {
 
-    console.log("Imagen Preview activo!!")
+    console.log("Goku god, causa");
 
-
-    // Delegar el evento de clic para las imágenes con la clase 'image-item'
     $('#folder-content').on('click', '.image-item', function (event) {
-        event.preventDefault(); // Evitar la acción predeterminada (si existe)
+        event.preventDefault();
+        
+        var imageUrl = $(this).data('image-url'); // Obtén la URL de la imagen
+        var fileId = $(this).data('file-id'); // Obtén el ID del archivo
 
-        // Obtener la URL de la imagen y el ID del archivo de Google Drive
-        var imageUrl = $(this).data('image-url');
-        var fileId = $(this).data('file-id'); // Asegúrate de que este valor exista
+        // Cambiar el tamaño de la imagen para alta resolución
+        var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800'); // Cambia '800' por el tamaño que desees
 
-        console.log("URL de la imagen alta resolución:", imageUrl);
-
-        if (!fileId) {
-            console.error("ID del archivo no encontrado");
-            return;
-        }
-
-        // Crear la URL de descarga directa de Google Drive
-        var downloadUrl = 'https://drive.google.com/uc?export=download&id=' + fileId;
+        console.log("URL de la imagen alta resolución:", highResImageUrl);
 
         // Crear el contenedor del popup (overlay)
         var overlay = $('<div></div>').css({
@@ -28,46 +20,38 @@ jQuery(document).ready(function ($) {
             left: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 10000 // Asegurarse de que esté encima de todo
+            zIndex: 10000
         });
 
-        // Cambia estas líneas
-        var img = $('<img>').css({
-            width: 'auto',  // Asegura que se ajuste al tamaño original
-            height: 'auto', // Asegura que se ajuste al tamaño original
-            maxWidth: '90%', // Opcional: limitar el tamaño máximo para que no se salga de la pantalla
-            maxHeight: '90%', // Opcional: limitar el tamaño máximo para que no se salga de la pantalla
-            border: '5px solid white',
-            borderRadius: '10px'
+        // Crear la imagen
+        var img = $('<img>').attr('src', highResImageUrl).css({
+            maxWidth: '90%',
+            maxHeight: '90%',
+            borderRadius: '25px'
         });
 
-
-        img.attr('src', imageUrl).on('error', function () {
-            $(this).attr('src', 'ruta/a/una/imagen/placeholder.png'); // Asegúrate de que esta ruta sea válida
-        });
-
-        // Agregar la imagen al overlay
         overlay.append(img);
 
         // Botón de cierre
         var closeButton = $('<span>&times;</span>').css({
             position: 'absolute',
-            top: '50px',
-            right: '20px',
-            fontSize: '30px',
+            top: '28px',
+            right: '30px',
+            fontSize: '50px',
             color: 'white',
             cursor: 'pointer'
         });
 
         // Botón de descarga
+        var downloadUrl = 'https://drive.google.com/uc?export=download&id=' + fileId; // URL de descarga directa
         var downloadButton = $('<a>Descargar</a>').attr('href', downloadUrl).attr('target', '_blank').css({
             position: 'absolute',
             top: '50px',
-            right: '60px', // A la izquierda del botón de cerrar
+            right: '80px',
             fontSize: '18px',
             color: 'white',
             textDecoration: 'none',
@@ -77,25 +61,22 @@ jQuery(document).ready(function ($) {
             cursor: 'pointer'
         });
 
-        // Al hacer clic en el botón de cierre, eliminar el popup
         closeButton.on('click', function () {
             overlay.remove();
         });
 
-        // Al hacer clic en cualquier parte del overlay, también cerrar el popup
-        overlay.on('click', function () {
-            overlay.remove();
-        });
+        // Agregar los botones y la imagen al overlay
+        overlay.append(downloadButton).append(closeButton);
+        $('body').append(overlay);
 
         // Evitar que el clic en la imagen cierre el popup
         img.on('click', function (event) {
             event.stopPropagation();
         });
 
-        // Agregar la imagen, el botón de descarga y el botón de cierre al overlay
-        overlay.append(downloadButton).append(closeButton);
-
-        // Agregar el overlay al cuerpo del documento
-        $('body').append(overlay);
+        // Cerrar el popup al hacer clic en el overlay
+        overlay.on('click', function () {
+            overlay.remove();
+        });
     });
 });

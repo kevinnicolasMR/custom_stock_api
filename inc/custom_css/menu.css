@@ -41,15 +41,19 @@
 }
 
 p{
-	padding: 0px
+	padding: 0px;
+	cursor: pointer;
+																			
 }
 
 .level-1{
 	padding-left: 10px;
+	cursor: pointer;	
 }
 
 .level-2{
 	padding-left: 10px;
+	cursor: pointer;	
 }
 
 
