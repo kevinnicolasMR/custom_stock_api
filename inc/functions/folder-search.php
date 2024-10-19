@@ -30,12 +30,22 @@ function display_drive_folders_menu($atts) {
     }
     $driveService = connect_to_google_drive();
     $folderIds = explode(',', $atts['ids']);
-    $output = '<div id="drive-folders-container"><div id="folder-menu">';
+    
+    // Contenedor principal
+    $output = '<div id="drive-folders-container">';
+    
+    // Contenedor del menú de carpetas
+    $output .= '<div id="folder-menu">';
+    
+    // Nuevo contenedor para las carpetas de nivel 0 con una clase específica
+    $output .= '<div class="level-0-wrapper">'; 
 
     foreach ($folderIds as $folderId) {
         $folderId = trim($folderId);
         try {
             $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
+            
+            // Cada carpeta de nivel 0
             $output .= '<div class="subfolder level-0" data-folder-id="' . esc_attr($folderId) . '">';
             $output .= '<p>' . esc_html($folder->name) . '</p>';  
             $output .= render_subfolders($driveService, $folderId, 1);
@@ -45,7 +55,11 @@ function display_drive_folders_menu($atts) {
         }
     }
 
+    // Cierra el contenedor de level-0-wrapper
+    $output .= '</div>'; 
+
     // Div para mostrar el mensaje de carga dentro del div de contenido
     $output .= '</div><div id="folder-content"><div id="loading-message" style="display:none;">Cargando...</div></div></div>';
+    
     return $output;
 }

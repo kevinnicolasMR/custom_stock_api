@@ -15,8 +15,12 @@ function get_folder_content() {
             $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos dentro de la carpeta
             $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
-            // Comienza a construir el contenido a mostrar
-            $output = ''; // Asegúrate de inicializar $output
+            // Inicializa los contenedores para diferentes tipos de archivos
+            $imageOutput = '';
+            $videoOutput = '';
+            $audioOutput = '';
+            $pdfOutput = '';
+            
             if (count($files->files) > 0) {
                 foreach ($files->files as $file) {
                     $mimeType = $file->mimeType;
@@ -26,35 +30,54 @@ function get_folder_content() {
                         continue; // Saltar si es una carpeta
                     }
 
-                    // Genera el HTML correspondiente dependiendo del tipo de archivo
-                    $output .= '<div class="file-item">';
-                    
+                    // Genera el HTML dependiendo del tipo de archivo
                     if (strpos($mimeType, 'image/') === 0) {
                         // Para imágenes
-                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
+                        $imageOutput .= '<div class="file-item file-item-img">';
+                        $imageOutput .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
+                        $imageOutput .= '</div>';
                     
                     } elseif (strpos($mimeType, 'video/') === 0) {
                         // Para videos
-                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
+                        $videoOutput .= '<div class="file-item file-item-video">';
+                        $videoOutput .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
+                        $videoOutput .= '</div>';
                     
                     } elseif (strpos($mimeType, 'audio/') === 0) {
                         // Para audios
                         $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
-                        $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-                        $output .= '<p>' . esc_html($file->name) . '</p>';
-                        $output .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
-                        $output .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
-                        $output .= '</div>';
+                        $audioOutput .= '<div class="file-item file-item-audio">';
+                        $audioOutput .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+                        $audioOutput .= '<p>' . esc_html($file->name) . '</p>';
+                        $audioOutput .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
+                        $audioOutput .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
+                        $audioOutput .= '</div>';
+                        $audioOutput .= '</div>';
                     
                     } elseif ($mimeType === 'application/pdf') {
                         // Para PDFs
-                        $output .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
+                        $pdfOutput .= '<div class="file-item file-item-pdf">';
+                        $pdfOutput .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
+                        $pdfOutput .= '</div>';
                     }
-                    
-                    $output .= '</div>'; // Cierra el div del archivo
                 }
             } else {
-                $output .= '<p>No se encontraron archivos en esta carpeta.</p>'; // Mensaje si no hay archivos
+                $imageOutput = '<p>No se encontraron archivos en esta carpeta.</p>'; // Mensaje si no hay archivos
+            }
+
+            // Combina los resultados, pero solo incluye contenedores que tengan contenido
+            $output = '';
+            if (!empty($imageOutput)) {
+                $output .= '<div class="file-item-container file-item-container-img">' . $imageOutput . '</div>';
+            }
+            if (!empty($videoOutput)) {
+                $output .= '<div class="file-item-container file-item-container-video">' . $videoOutput . '</div>';
+            }
+            if (!empty($audioOutput)) {
+                $output .= '<div class="file-item-container file-item-container-audio">' . $audioOutput . '</div>';
+            }
+            if (!empty($pdfOutput)) {
+                $output .= '<div class="file-item-container file-item-container-pdf">' . $pdfOutput . '</div>';
             }
 
             // Retorna la respuesta exitosa
@@ -68,6 +91,7 @@ function get_folder_content() {
         wp_send_json_error('No se ha proporcionado un ID de carpeta.');
     }
 }
+
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');

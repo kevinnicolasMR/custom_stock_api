@@ -1,5 +1,7 @@
+
+
 .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
-    max-width: none; /* o cualquier otro valor que necesites */
+    max-width: none; 
 }
 
 
@@ -10,6 +12,7 @@
 }
 #folder-menu{
 	width: 20%;
+	border-right: 1px solid;
 }
 #folder-content{
 	width: 80%;
@@ -63,17 +66,27 @@ p{
 	cursor: pointer;	
 }
 
-
-#folder-content{
+.file-item-container{
+	width: 100%;
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
 	justify-content: center;
 }
 
+.file-item-audio{
+	width: 100%;
+	padding: 10px;
+	margin: 0px;
+}
 
-.file-item{
-	display: flex;
+.file-item-img{
+	height: 220px;
+	width: 220px;
+	margin: 5px
+}
+
+.file-item-video{
 	height: 220px;
 	width: 220px;
 	margin: 5px
@@ -82,4 +95,10 @@ p{
 .image-item{
 	width: 220px !important;
 	height: 100% !important;
+}
+
+
+.level-0-wrapper{
+	border-left: 1px solid;
+	padding-left: 5px
 }
