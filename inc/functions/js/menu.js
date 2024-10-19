@@ -2,59 +2,59 @@
 console.log("Menu JS activo");
 
 jQuery(document).ready(function($) {
-    // Agregar un evento de clic a los elementos del menú de carpetas
-    $('.subfolder').on('click', function(event) {
-        event.stopPropagation(); // Evita que el evento se propague a otros elementos
+    // Función para manejar el clic en la carpeta y el renderizado del contenido
+    function handleFolderClick() {
+        $('.subfolder').on('click', function(event) {
+            event.stopPropagation(); // Evita que el evento se propague a otros elementos
 
-        // Obtener el ID de la carpeta que se hizo clic
-        const folderId = $(this).data('folder-id');
-        console.log('ID de carpeta seleccionada:', folderId); // Mostrar el ID en la consola
+            // Obtener el ID de la carpeta que se hizo clic
+            const folderId = $(this).data('folder-id');
+            console.log('ID de carpeta seleccionada:', folderId); // Mostrar el ID en la consola
 
-        // Mostrar el mensaje de carga
-        $('#loading-message').show();
+            // Mostrar el mensaje de carga
+            $('#loading-message').show();
 
-        // Realizar una solicitud AJAX para obtener el contenido de la carpeta
-        $.ajax({
-            url: ajax_object.ajax_url, // Usar ajax_object.ajax_url
-            type: 'POST',
-            data: {
-                action: 'get_folder_content', // Esta acción debe coincidir con la que vamos a definir en PHP
-                folder_id: folderId // Enviar el ID de la carpeta seleccionada
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#folder-content').html(response.data); // Renderizar el contenido en el div correspondiente
-                } else {
-                    console.error(response.data);
+            // Realizar una solicitud AJAX para obtener el contenido de la carpeta
+            $.ajax({
+                url: ajax_object.ajax_url, // Usar ajax_object.ajax_url
+                type: 'POST',
+                data: {
+                    action: 'get_folder_content', // Acción definida en PHP
+                    folder_id: folderId // Enviar el ID de la carpeta seleccionada
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#folder-content').html(response.data); // Renderizar el contenido en el div correspondiente
+                    } else {
+                        console.error(response.data);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+                },
+                complete: function() {
+                    // Ocultar el mensaje de carga
+                    $('#loading-message').hide();
                 }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-            },
-            complete: function() {
-                // Ocultar el mensaje de carga
-                $('#loading-message').hide();
-            }
+            });
+
+            // Llamada a la función de manejo de clases para subcarpetas
+            toggleSubfolders(this);
         });
+    }
 
-        // Cambiar la clase de visibilidad de las subcarpetas
-        $(this).siblings().each(function() {
-            toggleVisibility(this); // Ocultar otras subcarpetas
-        });
-
-        // Alternar la visibilidad de la carpeta seleccionada
-        toggleVisibility(this);
-
-        // Alternar subcarpetas
-        const subfolders = $(this).find('.subfolder');
+    // Función para alternar la visibilidad de las subcarpetas
+    function toggleSubfolders(folderElement) {
+        const subfolders = $(folderElement).children('.subfolder'); // Obtener solo las subcarpetas directas
+        
         if (subfolders.length) {
             subfolders.each(function() {
-                toggleVisibility(this); // Alternar la visibilidad de las subcarpetas
+                toggleVisibility(this); // Alternar visibilidad solo para las subcarpetas directas
             });
         }
-    });
+    }
 
-    // Función para alternar clases
+    // Función para alternar clases de visibilidad
     function toggleVisibility(element) {
         if ($(element).hasClass('hideContentMenu')) {
             $(element).removeClass('hideContentMenu').addClass('visibleContentMenu');
@@ -62,7 +62,13 @@ jQuery(document).ready(function($) {
             $(element).removeClass('visibleContentMenu').addClass('hideContentMenu');
         }
     }
+
+    // Iniciar el manejo de eventos
+    handleFolderClick();
 });
+
+
+
 
 
 
