@@ -46,13 +46,34 @@ function get_folder_content() {
                     } elseif (strpos($mimeType, 'audio/') === 0) {
                         // Para audios
                         $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
-                        $audioOutput .= '<div class="file-item file-item-audio">';
-                        $audioOutput .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-                        $audioOutput .= '<p>' . esc_html($file->name) . '</p>';
-                        $audioOutput .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
-                        $audioOutput .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
+                        $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id); // URL para descargar el archivo
+                    
+                        // Estructura HTML para el audio
+                        $audioOutput .= '<div class="file-item file-item-audio">';  // Div principal
+                    
+                        // Primer bloque: Botón de reproducir y título
+                        $audioOutput .= '<div class="audio-info-container">';  // Div para el botón y el título
+                        $audioOutput .= '  <div class="audio-play-btn">';
+                        $audioOutput .= '    <button class="play-audio-button">Reproducir</button>'; // Botón de reproducir
+                        $audioOutput .= '  </div>';
+                        $audioOutput .= '  <div class="audio-title">';
+                        $audioOutput .= '    <p>' . esc_html($file->name) . '</p>'; // Título del audio
+                        $audioOutput .= '  </div>';
                         $audioOutput .= '</div>';
+                    
+                        // Segundo bloque: Texto cualquiera
+                        $audioOutput .= '<div class="audio-description">';
+                        $audioOutput .= '  <p>Texto de ejemplo aquí</p>'; // Texto cualquiera
                         $audioOutput .= '</div>';
+                    
+                        // Tercer bloque: Botón de descarga
+                        $audioOutput .= '<div class="audio-download">';
+                        $audioOutput .= '  <a href="' . esc_url($downloadUrl) . '" class="download-audio-button" download>Descargar</a>'; // Botón de descarga
+                        $audioOutput .= '</div>';
+                    
+                        $audioOutput .= '</div>'; // Cierre del div principal
+                   
+                
                     
                     } elseif ($mimeType === 'application/pdf') {
                         // Para PDFs
