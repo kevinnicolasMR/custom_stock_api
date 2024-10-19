@@ -19,27 +19,33 @@ function get_folder_content() {
             $output = ''; // Asegúrate de inicializar $output
             if (count($files->files) > 0) {
                 foreach ($files->files as $file) {
-                    // Verifica el tipo de archivo y genera el HTML correspondiente
                     $mimeType = $file->mimeType;
+                    
+                    // Excluir las carpetas (application/vnd.google-apps.folder)
+                    if ($mimeType === 'application/vnd.google-apps.folder') {
+                        continue; // Saltar si es una carpeta
+                    }
+
+                    // Genera el HTML correspondiente dependiendo del tipo de archivo
                     $output .= '<div class="file-item">';
                     
                     if (strpos($mimeType, 'image/') === 0) {
-                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '" style="width: 300px; height: 300px;">';
-
+                        // Para imágenes
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
                     
                     } elseif (strpos($mimeType, 'video/') === 0) {
-                        // Para videos, muestra la miniatura
+                        // Para videos
                         $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
-                     
+                    
                     } elseif (strpos($mimeType, 'audio/') === 0) {
-    // Crea un div con un botón "X" que cargará el audio dinámicamente
-    $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
-    
-    $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-    $output .= '<p>' . esc_html($file->name) . '</p>';
-    $output .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
-    $output .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
-    $output .= '</div>';
+                        // Para audios
+                        $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
+                        $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+                        $output .= '<p>' . esc_html($file->name) . '</p>';
+                        $output .= '<button class="load-audio">Cargar audio</button>'; // Botón para cargar el audio
+                        $output .= '<div class="audio-content"></div>'; // Contenedor vacío donde se insertará el iframe
+                        $output .= '</div>';
+                    
                     } elseif ($mimeType === 'application/pdf') {
                         // Para PDFs
                         $output .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
@@ -66,6 +72,3 @@ function get_folder_content() {
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
-
-
-
