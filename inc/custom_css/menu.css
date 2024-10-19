@@ -64,3 +64,22 @@ p{
 }
 
 
+#folder-content{
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	justify-content: center;
+}
+
+
+.file-item{
+	display: flex;
+	height: 220px;
+	width: 220px;
+	margin: 5px
+}
+
+.image-item{
+	width: 220px !important;
+	height: 100% !important;
+}

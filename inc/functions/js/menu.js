@@ -45,8 +45,18 @@ jQuery(document).ready(function($) {
 
     // Función para alternar la visibilidad de las subcarpetas
     function toggleSubfolders(folderElement) {
-        const subfolders = $(folderElement).children('.subfolder'); // Obtener solo las subcarpetas directas
+        const currentLevel = $(folderElement).attr('class').match(/level-\d+/)[0]; // Obtener el nivel actual (ej. 'level-0', 'level-1')
         
+        // Ocultar las subcarpetas visibles de todos los demás elementos del mismo nivel
+        $(folderElement).siblings('.subfolder').each(function() {
+            $(this).find('.subfolder').each(function() {
+                // Si algún elemento del mismo nivel está visible, lo ocultamos
+                $(this).removeClass('visibleContentMenu').addClass('hideContentMenu');
+            });
+        });
+
+        // Alternar la visibilidad de las subcarpetas del elemento actual
+        const subfolders = $(folderElement).children('.subfolder');
         if (subfolders.length) {
             subfolders.each(function() {
                 toggleVisibility(this); // Alternar visibilidad solo para las subcarpetas directas
@@ -66,6 +76,7 @@ jQuery(document).ready(function($) {
     // Iniciar el manejo de eventos
     handleFolderClick();
 });
+
 
 
 
