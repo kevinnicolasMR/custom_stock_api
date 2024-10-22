@@ -58,15 +58,9 @@ function get_folder_content() {
                         // Crear el contenedor para el botón y el reproductor
                         $audioOutput .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
                         $audioOutput .= '  <button class="load-audio">'; // Botón para cargar el audio
-                        $audioOutput .= '    <i class="fas fa-volume-off"></i>'; // Ícono de música apagada
+                        $audioOutput .= '   <i class="fas fa-download"></i>'; // Ícono de música apagada
                         $audioOutput .= '  </button>';
-                    
-                        // Elemento de audio HTML5
-                        $audioOutput .= '  <audio class="audio-player" controls preload="auto" style="display:none;">';
-                        $audioOutput .= '    <source src="' . esc_url($audioUrl) . '" type="' . esc_attr($mimeType) . '">';
-                        $audioOutput .= '    Tu navegador no soporta el elemento de audio.';
-                        $audioOutput .= '  </audio>';
-                    
+                                                              
                         $audioOutput .= '  <div class="audio-content"></div>'; // Contenedor vacío
                         $audioOutput .= '</div>'; // Cierre del contenedor de audio
 

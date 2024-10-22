@@ -1,41 +1,32 @@
 jQuery(document).ready(function($) {
-    // Evento para cargar el audio al hacer clic en el botón
-    $('.load-audio').on('click', function (e) {
+    // Escucha el clic en el botón "Cargar audio"
+    $('#folder-content').on('click', '.load-audio', function (e) {
         e.preventDefault();
         
-        // Obtener el contenedor de audio correspondiente
-        var audioContainer = $(this).closest('.audio-container');
-        var audioUrl = audioContainer.data('audio-url'); // Obtener la URL del audio
+        // Referencia al botón
+        var button = $(this);
         
-        // Mostrar el elemento de audio y reproducir
-        var audioPlayer = audioContainer.find('.audio-player');
-        
-        // Si el audio ya está cargado, reproducirlo
-        if (audioPlayer.length) {
-            // Cambiar el src del elemento de audio y forzar la carga
-            audioPlayer.attr('src', audioUrl);
-            audioPlayer[0].load(); // Cargar el audio
-            audioPlayer[0].play(); // Intentar reproducir el audio
-            audioPlayer.show(); // Mostrar el elemento de audio
-        } else {
-            // Si no hay audio, mostrar un mensaje o realizar otra acción
-            console.log('No se encontró el elemento de audio.');
+        // Cambiar el ícono/texto del botón a "goku"
+        button.html('<i class="fas fa-spinner fa-spin"></i>'); 
+
+        // Después de 5 segundos, cambiar el texto a "Holi"
+        setTimeout(function() {
+            button.html('<i class="fas fa-play"></i>'); 
+        }, 5000);
+
+        // Lógica del iframe para cargar el audio
+        var container = button.closest('.audio-container'); // Encuentra el contenedor del audio
+        var audioUrl = container.data('audio-url'); // Obtén la URL del audio del atributo data
+        var audioContent = container.find('.audio-content'); // Encuentra el div donde se insertará el iframe
+
+        // Verifica si la URL es correcta
+        console.log('URL de audio:', audioUrl);
+
+        // Inserta el iframe solo si aún no se ha cargado
+        if (audioContent.is(':empty')) {
+            audioContent.html('<iframe src="' + audioUrl + '" width="100%" height="85" frameborder="0" allow="autoplay"></iframe>');
         }
-
-        // Ocultar el botón de carga después de hacer clic
-        $(this).hide();
-
-        // Manejo de errores para verificar si el audio está cargado
-        var checkAudioInterval = setInterval(function() {
-            // Verificar si el audio está listo para reproducir
-            if (audioPlayer[0].readyState >= 2) { // readyState 2 significa que está listo para reproducir
-                clearInterval(checkAudioInterval); // Detener la verificación
-                console.log("Audio cargado y listo para reproducir");
-            } else {
-                console.log('Esperando a que el audio se cargue...');
-            }
-        }, 1000); // Verificar cada 1 segundo
     });
-    
-    console.log("Rau");
+
+    console.log("Rauluighiug");
 });

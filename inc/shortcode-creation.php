@@ -24,7 +24,7 @@ function enqueue_custom_assets() {
     wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
 
     // Cargar Font Awesome desde su CDN
-    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css', array(), null);
+    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', array(), null);
 
     // Localiza el script y pasa la URL de admin-ajax.php a JavaScript
     wp_localize_script('custom-script', 'ajax_object', array(

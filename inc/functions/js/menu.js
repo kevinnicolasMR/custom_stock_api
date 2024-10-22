@@ -76,23 +76,3 @@ jQuery(document).ready(function($) {
 });
 
 
-jQuery(document).ready(function($) {
-    // Escucha el clic en el botón "Cargar audio" usando delegación de eventos
-    $('#folder-content').on('click', '.load-audio', function() {
-        var container = $(this).closest('.audio-container'); // Encuentra el contenedor del audio
-        var audioUrl = container.data('audio-url'); // Obtén la URL del audio del atributo data
-        var audioContent = container.find('.audio-content'); // Encuentra el div donde se insertará el iframe
-        
-        // Verifica si la URL es correcta
-        console.log('URL de audio:', audioUrl);
-
-        // Inserta el iframe solo si aún no se ha cargado
-        if (audioContent.is(':empty')) {
-            audioContent.html('<iframe src="' + audioUrl + '" width="100%" height="85" frameborder="0" allow="autoplay"></iframe>');
-        }
-        
-        // Cambia el botón a "Reproduciendo..." y lo desactiva
-        $(this).text('Reproduciendo...');
-        $(this).prop('disabled', true); // Desactiva el botón para evitar múltiples clics
-    });
-});
