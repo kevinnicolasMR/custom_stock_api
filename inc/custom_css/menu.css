@@ -14,7 +14,6 @@
 
 #folder-content{
 	width: 80%;
-	display: flex;
 }
 .media-preview{
 	width: 100%;
@@ -96,9 +95,11 @@ p{
 
 
 .file-item-audio{
-	width: 100%;
-	padding: 15px 40px;
+	width: 300px;
+	height: 180px;
+	padding: 10px 10px;
 	margin-bottom: 10px;
+	margin-right: 10px;
 	border: 1px solid;
 }
 
@@ -135,9 +136,80 @@ p{
 	cursor: pointer !important;
 }
 
+.download-audio-button {
+    background-color: #4CAF50; /* Color del botón */
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 10px;
+}
 
 
 
+.file-item-audio{
+	border: 1px solid;
+}
 
 
+.audio-info-container{
+		display: flex;
+	width: 100%;
+	height: 33%; 
+	border: 1px solid;	
+}
+
+.audio-title-container{
+		width: 70%
+}
+
+.audio-container{
+	  width: 30%;
+	height: 100%;
+	position: relative;
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+}
+
+.audio-content{
+	width:30px;	
+	position: absolute;
+	top: -10px;
+	left: -45px;
+	opacity: 0.6;
+}
+
+.audio-content iframe {
+    width: 300px;	
+    height: 50px;
+}
+
+.audio-title{
+	font-size: 12px;
+	line-height: 13px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: left;
+	align-items: center;
+}
+
+.audio-description{
+	height: 36%;
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+}
+
+.audio-download{
+	height: 30%;
+	display: flex;
+	align-items: center;
+	border: 1px solid
+}
 

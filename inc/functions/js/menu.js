@@ -1,6 +1,4 @@
 // Verifica si la URL es correcta
-console.log("Menu JS activo");
-
 jQuery(document).ready(function($) {
     // Función para manejar el clic en la carpeta y el renderizado del contenido
     function handleFolderClick() {
@@ -76,11 +74,6 @@ jQuery(document).ready(function($) {
     // Iniciar el manejo de eventos
     handleFolderClick();
 });
-
-
-
-
-
 
 
 jQuery(document).ready(function($) {

@@ -1,5 +1,4 @@
 jQuery(document).ready(function ($) {
-    console.log("Goku god, causa");
 
     // Evento para imágenes
     $('#folder-content').on('click', '.image-item', function (event) {

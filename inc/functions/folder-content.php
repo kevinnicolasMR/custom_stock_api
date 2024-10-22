@@ -43,39 +43,58 @@ function get_folder_content() {
                         $videoOutput .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
                         $videoOutput .= '</div>';
                     
-                    } elseif (strpos($mimeType, 'audio/') === 0) {
-                        // Para audios
-                        $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview'; // URL para previsualizar y reproducir
-                        $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id); // URL para descargar el archivo
+                    }elseif (strpos($mimeType, 'audio/') === 0) {
+                        // URL para reproducir en previsualización (streaming)
+                        $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview';  // URL de previsualización
+                        $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id); // URL para descargar
                     
                         // Estructura HTML para el audio
                         $audioOutput .= '<div class="file-item file-item-audio">';  // Div principal
                     
-                        // Primer bloque: Botón de reproducir y título
-                        $audioOutput .= '<div class="audio-info-container">';  // Div para el botón y el título
-                        $audioOutput .= '  <div class="audio-play-btn">';
-                        $audioOutput .= '    <button class="play-audio-button">Reproducir</button>'; // Botón de reproducir
-                        $audioOutput .= '  </div>';
-                        $audioOutput .= '  <div class="audio-title">';
-                        $audioOutput .= '    <p>' . esc_html($file->name) . '</p>'; // Título del audio
-                        $audioOutput .= '  </div>';
-                        $audioOutput .= '</div>';
+                        // Primer bloque: Contenedor combinado para el botón, reproductor y título
+                        $audioOutput .= '<div class="audio-info-container">';  // Div para el botón, audio y título
                     
-                        // Segundo bloque: Texto cualquiera
+                                            
+                        // Crear el contenedor para el botón y el reproductor
+                        $audioOutput .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+                        $audioOutput .= '  <button class="load-audio">'; // Botón para cargar el audio
+                        $audioOutput .= '    <i class="fas fa-volume-off"></i>'; // Ícono de música apagada
+                        $audioOutput .= '  </button>';
+                    
+                        // Elemento de audio HTML5
+                        $audioOutput .= '  <audio class="audio-player" controls preload="auto" style="display:none;">';
+                        $audioOutput .= '    <source src="' . esc_url($audioUrl) . '" type="' . esc_attr($mimeType) . '">';
+                        $audioOutput .= '    Tu navegador no soporta el elemento de audio.';
+                        $audioOutput .= '  </audio>';
+                    
+                        $audioOutput .= '  <div class="audio-content"></div>'; // Contenedor vacío
+                        $audioOutput .= '</div>'; // Cierre del contenedor de audio
+
+                        // Título del audio
+                        $audioOutput .= '<div class="audio-title-container">'; // Nuevo div para el título
+                        $audioOutput .= '  <p class="audio-title">' . esc_html($file->name) . '</p>'; // Título del audio
+                        $audioOutput .= '</div>'; // Cierre del div de título
+                    
+                        $audioOutput .= '</div>'; // Cierre del contenedor combinado de información
+                    
+                        // Segundo bloque: Texto adicional
                         $audioOutput .= '<div class="audio-description">';
                         $audioOutput .= '  <p>Texto de ejemplo aquí</p>'; // Texto cualquiera
                         $audioOutput .= '</div>';
                     
                         // Tercer bloque: Botón de descarga
                         $audioOutput .= '<div class="audio-download">';
-                        $audioOutput .= '  <a href="' . esc_url($downloadUrl) . '" class="download-audio-button" download>Descargar</a>'; // Botón de descarga
+                        $audioOutput .= '  <a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a>';
                         $audioOutput .= '</div>';
                     
                         $audioOutput .= '</div>'; // Cierre del div principal
-                   
-                
+                    }
                     
-                    } elseif ($mimeType === 'application/pdf') {
+                    
+                    
+                    
+                    
+                    elseif ($mimeType === 'application/pdf') {
                         // Para PDFs
                         $pdfOutput .= '<div class="file-item file-item-pdf">';
                         $pdfOutput .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';

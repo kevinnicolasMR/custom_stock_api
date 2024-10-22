@@ -14,13 +14,17 @@ function generate_shortcode($folderIds) {
 
 function enqueue_custom_assets() {
     wp_enqueue_script('jquery'); // Asegúrate de que jQuery se esté cargando
+
+    // Cargar tus scripts personalizados
     wp_enqueue_script('custom-script', plugin_dir_url(__FILE__) . 'functions/js/menu.js', array('jquery'), null, true);
-	
-    // Cargar el nuevo script para el popup de imágenes
+    wp_enqueue_script('custom-file-script', plugin_dir_url(__FILE__) . 'functions/js/custom-file.js', array('jquery'), null, true);
     wp_enqueue_script('image-popup-script', plugin_dir_url(__FILE__) . 'functions/js/popup-preview.js', array('jquery'), null, true);
 
-    // Cargar el archivo CSS
+    // Cargar tus estilos personalizados
     wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
+
+    // Cargar Font Awesome desde su CDN
+    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css', array(), null);
 
     // Localiza el script y pasa la URL de admin-ajax.php a JavaScript
     wp_localize_script('custom-script', 'ajax_object', array(
