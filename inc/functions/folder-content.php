@@ -1,7 +1,9 @@
 <?php
+
+
 require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
-// Agrega esta función para manejar la solicitud AJAX
+// Función para manejar la solicitud AJAX
 function get_folder_content() {
     // Verifica si se proporciona el ID de la carpeta
     if (isset($_POST['folder_id'])) {
@@ -15,11 +17,8 @@ function get_folder_content() {
             $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos dentro de la carpeta
             $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
-            // Inicializa los contenedores para diferentes tipos de archivos
-            $imageOutput = '';
-            $videoOutput = '';
-            $audioOutput = '';
-            $pdfOutput = '';
+            // Inicializa una variable para el contenido de salida
+            $output = '';
             
             if (count($files->files) > 0) {
                 foreach ($files->files as $file) {
@@ -33,85 +32,43 @@ function get_folder_content() {
                     // Genera el HTML dependiendo del tipo de archivo
                     if (strpos($mimeType, 'image/') === 0) {
                         // Para imágenes
-                        $imageOutput .= '<div class="file-item file-item-img">';
-                        $imageOutput .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
-                        $imageOutput .= '</div>';
+                        $output .= '<div class="file-item file-item-img">';
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
+                        $output .= '</div>';
                     
                     } elseif (strpos($mimeType, 'video/') === 0) {
                         // Para videos
-                        $videoOutput .= '<div class="file-item file-item-video">';
-                        $videoOutput .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
-                        $videoOutput .= '</div>';
+                        $output .= '<div class="file-item file-item-video">';
+                        $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview" style="max-width: 100%; height: auto;">';
+                        $output .= '</div>';
                     
-                    }elseif (strpos($mimeType, 'audio/') === 0) {
-                        // URL para reproducir en previsualización (streaming)
+                    } elseif (strpos($mimeType, 'audio/') === 0) {
+                        // Para audios
                         $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview';  // URL de previsualización
                         $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id); // URL para descargar
-                    
+                        
                         // Estructura HTML para el audio
-                        $audioOutput .= '<div class="file-item file-item-audio">';  // Div principal
+                        $output .= '<div class="file-item file-item-audio">';
+                        $output .= '<div class="audio-info-container">';
+                        $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+                        $output .= '<button class="load-audio"><i class="fas fa-download"></i></button>';
+                        $output .= '<div class="audio-content"></div>';
+                        $output .= '</div>';
+                        $output .= '<div class="audio-title-container"><p class="audio-title">' . esc_html($file->name) . '</p></div>';
+                        $output .= '</div>';
+                        $output .= '<div class="audio-description"><p>Texto de ejemplo aquí</p></div>';
+                        $output .= '<div class="audio-download"><a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a></div>';
+                        $output .= '</div>';
                     
-                        // Primer bloque: Contenedor combinado para el botón, reproductor y título
-                        $audioOutput .= '<div class="audio-info-container">';  // Div para el botón, audio y título
-                    
-                                            
-                        // Crear el contenedor para el botón y el reproductor
-                        $audioOutput .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-                        $audioOutput .= '  <button class="load-audio">'; // Botón para cargar el audio
-                        $audioOutput .= '   <i class="fas fa-download"></i>'; // Ícono de música apagada
-                        $audioOutput .= '  </button>';
-                                                              
-                        $audioOutput .= '  <div class="audio-content"></div>'; // Contenedor vacío
-                        $audioOutput .= '</div>'; // Cierre del contenedor de audio
-
-                        // Título del audio
-                        $audioOutput .= '<div class="audio-title-container">'; // Nuevo div para el título
-                        $audioOutput .= '  <p class="audio-title">' . esc_html($file->name) . '</p>'; // Título del audio
-                        $audioOutput .= '</div>'; // Cierre del div de título
-                    
-                        $audioOutput .= '</div>'; // Cierre del contenedor combinado de información
-                    
-                        // Segundo bloque: Texto adicional
-                        $audioOutput .= '<div class="audio-description">';
-                        $audioOutput .= '  <p>Texto de ejemplo aquí</p>'; // Texto cualquiera
-                        $audioOutput .= '</div>';
-                    
-                        // Tercer bloque: Botón de descarga
-                        $audioOutput .= '<div class="audio-download">';
-                        $audioOutput .= '  <a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a>';
-                        $audioOutput .= '</div>';
-                    
-                        $audioOutput .= '</div>'; // Cierre del div principal
-                    }
-                    
-                    
-                    
-                    
-                    
-                    elseif ($mimeType === 'application/pdf') {
+                    } elseif ($mimeType === 'application/pdf') {
                         // Para PDFs
-                        $pdfOutput .= '<div class="file-item file-item-pdf">';
-                        $pdfOutput .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
-                        $pdfOutput .= '</div>';
+                        $output .= '<div class="file-item file-item-pdf">';
+                        $output .= '<p>' . esc_html($file->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($file->id) . '/view" target="_blank">Ver PDF</a></p>';
+                        $output .= '</div>';
                     }
                 }
             } else {
-                $imageOutput = '<p>No se encontraron archivos en esta carpeta.</p>'; // Mensaje si no hay archivos
-            }
-
-            // Combina los resultados, pero solo incluye contenedores que tengan contenido
-            $output = '';
-            if (!empty($imageOutput)) {
-                $output .= '<div class="file-item-container file-item-container-img">' . $imageOutput . '</div>';
-            }
-            if (!empty($videoOutput)) {
-                $output .= '<div class="file-item-container file-item-container-video">' . $videoOutput . '</div>';
-            }
-            if (!empty($audioOutput)) {
-                $output .= '<div class="file-item-container file-item-container-audio">' . $audioOutput . '</div>';
-            }
-            if (!empty($pdfOutput)) {
-                $output .= '<div class="file-item-container file-item-container-pdf">' . $pdfOutput . '</div>';
+                $output = '<p>No se encontraron archivos en esta carpeta.</p>'; // Mensaje si no hay archivos
             }
 
             // Retorna la respuesta exitosa
@@ -125,7 +82,6 @@ function get_folder_content() {
         wp_send_json_error('No se ha proporcionado un ID de carpeta.');
     }
 }
-
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');

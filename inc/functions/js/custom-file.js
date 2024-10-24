@@ -6,10 +6,10 @@ jQuery(document).ready(function($) {
         // Referencia al botón
         var button = $(this);
         
-        // Cambiar el ícono/texto del botón a "goku"
+        // Cambiar el ícono/texto del botón a "goku" (ícono de carga)
         button.html('<i class="fas fa-spinner fa-spin"></i>'); 
 
-        // Después de 5 segundos, cambiar el texto a "Holi"
+        // Después de 5 segundos, cambiar el texto a "Holi" y agregar el ícono de Play con texto "Pedro"
         setTimeout(function() {
             button.html('<i class="fas fa-play"></i>'); 
         }, 5000);
