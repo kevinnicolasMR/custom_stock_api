@@ -40,7 +40,9 @@ function get_folder_content() {
             }
 
             // Inicializa una variable para el contenido de salida
-            $output = '';
+            $output = '<div class="search-container">';
+            $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estas buscando">';
+            $output .= '</div>';
 
             // Genera HTML para carpetas
             foreach ($folders as $folder) {
