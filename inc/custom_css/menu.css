@@ -56,11 +56,13 @@ p{
 .level-0-wrapper{
 	border-left: 1px solid;
 	padding-left: 5px;
+	cursor: pointer;
 }
 
 .level-1{
 	padding-left: 10px;
-	cursor: pointer;	
+	cursor: pointer;
+		cursor: pointer;
 }
 
 .level-2{
@@ -232,4 +234,22 @@ p{
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.file-item-folder{
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.file-item-pdf{
+	width: 300px;
+	height: 200px;
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
 }

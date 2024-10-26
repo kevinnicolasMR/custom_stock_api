@@ -1,6 +1,5 @@
 <?php
 
-
 require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
 // Función para manejar la solicitud AJAX
@@ -13,8 +12,8 @@ function get_folder_content() {
         $driveService = connect_to_google_drive();
 
         try {
-            // Realiza la consulta para obtener archivos en la carpeta
-            $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos dentro de la carpeta
+            // Realiza la consulta para obtener archivos y carpetas en la carpeta
+            $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos y carpetas dentro de la carpeta
             $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
             // Inicializa una variable para el contenido de salida
@@ -23,14 +22,14 @@ function get_folder_content() {
             if (count($files->files) > 0) {
                 foreach ($files->files as $file) {
                     $mimeType = $file->mimeType;
-                    
-                    // Excluir las carpetas (application/vnd.google-apps.folder)
-                    if ($mimeType === 'application/vnd.google-apps.folder') {
-                        continue; // Saltar si es una carpeta
-                    }
 
                     // Genera el HTML dependiendo del tipo de archivo
-                    if (strpos($mimeType, 'image/') === 0) {
+                    if ($mimeType === 'application/vnd.google-apps.folder') {
+                        $output .= '<div class="file-item file-item-folder clickable-folder" data-folder-id="' . esc_attr($file->id) . '" style="width: 300px; height: 200px;">';
+                        $output .= '<p class="folder-name">' . esc_html($file->name) . '</p>';
+                        $output .= '</div>';
+                    
+                    } elseif (strpos($mimeType, 'image/') === 0) {
                         // Para imágenes
                         $output .= '<div class="file-item file-item-img">';
                         $output .= '<img src="' . esc_url($file->thumbnailLink) . '" alt="' . esc_attr($file->name) . '" class="image-item" data-image-url="' . esc_url($file->thumbnailLink) . '" data-file-id="' . esc_attr($file->id) . '">';
@@ -44,10 +43,9 @@ function get_folder_content() {
                     
                     } elseif (strpos($mimeType, 'audio/') === 0) {
                         // Para audios
-                        $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview';  // URL de previsualización
-                        $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id); // URL para descargar
+                        $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview';
+                        $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id);
                         
-                        // Estructura HTML para el audio
                         $output .= '<div class="file-item file-item-audio">';
                         $output .= '<div class="audio-info-container">';
                         $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
