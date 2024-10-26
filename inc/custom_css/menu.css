@@ -14,6 +14,7 @@
 	width: 80%;
 	display: flex;
 	flex-wrap: wrap;
+	align-content: flex-start;
 	
 }
 .media-preview{
@@ -82,6 +83,7 @@ p{
 .file-item-img{
 	height: 200px;
 	width: 300px;
+	cursor: pointer;
 }
 
 .file-item-video{
@@ -253,3 +255,8 @@ p{
 	justify-content: center;
 	cursor: pointer;
 }
+
+
+
+
+

@@ -111,7 +111,7 @@ jQuery(document).ready(function ($) {
     function createDownloadButton(downloadUrl) {
         return $('<a>Descargar</a>').attr('href', downloadUrl).attr('target', '_blank').css({
             position: 'absolute',
-            top: '50px',
+            top: '25px',
             right: '80px',
             fontSize: '18px',
             color: 'white',
