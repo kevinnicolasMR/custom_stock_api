@@ -39,56 +39,64 @@ function get_folder_content() {
                 }
             }
 
-            // Inicializa una variable para el contenido de salida
-            $output = '<div class="search-container">';
-            $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estas buscando">';
-            $output .= '</div>';
+           // Contenedor de búsqueda
+$output = '<div class="search-container">';
+$output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
+$output .= '<button id="search-button">Buscar</button>';
+$output .= '<button id="clear-button" style="display: none;">X</button>'; // Botón para eliminar el filtrado
+$output .= '</div>';
+
+
+            // Contenedor de archivos
+            $output .= '<div class="file-container">';
 
             // Genera HTML para carpetas
             foreach ($folders as $folder) {
-                $output .= '<div class="file-item file-item-folder clickable-folder" data-folder-id="' . esc_attr($folder->id) . '" style="width: 300px; height: 200px;">';
+                $output .= '<div class="file-item filter-prop-element file-item-folder clickable-folder" data-folder-id="' . esc_attr($folder->id) . '" style="width: 300px; height: 200px;" alt="' . esc_attr($folder->name) . '">'; // Agregado el atributo alt
                 $output .= '<p class="folder-name">' . esc_html($folder->name) . '</p>';
                 $output .= '</div>';
-            }
+            }          
 
             // Genera HTML para videos
             foreach ($videos as $video) {
                 $output .= '<div class="file-item file-item-video">';
-                $output .= '<img src="' . esc_url($video->thumbnailLink) . '" alt="' . esc_attr($video->name) . '" class="video-item" data-video-url="https://drive.google.com/file/d/' . esc_attr($video->id) . '/preview" style="max-width: 100%; height: auto;">';
+                $output .= '<img src="' . esc_url($video->thumbnailLink) . '" alt="' . esc_attr($video->name) . '" class="video-item filter-prop-element" data-video-url="https://drive.google.com/file/d/' . esc_attr($video->id) . '/preview" style="max-width: 100%; height: auto;">';
                 $output .= '</div>';
             }
 
             // Genera HTML para imágenes
             foreach ($images as $image) {
                 $output .= '<div class="file-item file-item-img">';
-                $output .= '<img src="' . esc_url($image->thumbnailLink) . '" alt="' . esc_attr($image->name) . '" class="image-item" data-image-url="' . esc_url($image->thumbnailLink) . '" data-file-id="' . esc_attr($image->id) . '">';
+                $output .= '<img src="' . esc_url($image->thumbnailLink) . '" alt="' . esc_attr($image->name) . '" class="image-item filter-prop-element" data-image-url="' . esc_url($image->thumbnailLink) . '" data-file-id="' . esc_attr($image->id) . '">';
                 $output .= '</div>';
             }
 
             // Genera HTML para audios
-            foreach ($audios as $audio) {
-                $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($audio->id) . '/preview';
-                $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($audio->id);
+foreach ($audios as $audio) {
+    $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($audio->id) . '/preview';
+    $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($audio->id);
 
-                $output .= '<div class="file-item file-item-audio">';
-                $output .= '<div class="audio-info-container">';
-                $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-                $output .= '<button class="load-audio"><i class="fas fa-download"></i></button>';
-                $output .= '<div class="audio-content"></div>';
-                $output .= '</div>';
-                $output .= '<div class="audio-title-container"><p class="audio-title">' . esc_html($audio->name) . '</p></div>';
-                $output .= '</div>';
-                $output .= '<div class="audio-description"><p>Texto de ejemplo aquí</p></div>';
-                $output .= '<div class="audio-download"><a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a></div>';
-                $output .= '</div>';
-            }
+    $output .= '<div class="file-item file-item-audio filter-prop-element" alt="' . esc_attr($audio->name) . '">'; // Clase y alt agregado
+    $output .= '<div class="audio-info-container">';
+    $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+    $output .= '<button class="load-audio"><i class="fas fa-download"></i></button>';
+    $output .= '<div class="audio-content"></div>';
+    $output .= '</div>';
+    $output .= '<div class="audio-title-container"><p class="audio-title">' . esc_html($audio->name) . '</p></div>';
+    $output .= '</div>';
+    $output .= '<div class="audio-description"><p>Texto de ejemplo aquí</p></div>';
+    $output .= '<div class="audio-download"><a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a></div>';
+    $output .= '</div>';
+}
 
-            // Genera HTML para PDFs
-            foreach ($pdfs as $pdf) {
-                $output .= '<div class="file-item file-item-pdf">';
-                $output .= '<p>' . esc_html($pdf->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($pdf->id) . '/view" target="_blank">Ver PDF</a></p>';
-                $output .= '</div>';
-            }
+// Genera HTML para PDFs
+foreach ($pdfs as $pdf) {
+    $output .= '<div class="file-item file-item-pdf filter-prop-element" alt="' . esc_attr($pdf->name) . '">'; // Clase y alt agregado
+    $output .= '<p>' . esc_html($pdf->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($pdf->id) . '/view" target="_blank">Ver PDF</a></p>';
+    $output .= '</div>';
+}
+
+            $output .= '</div>'; // Cierra el contenedor de archivos
 
             // Si no hay archivos, muestra un mensaje
             if ($output === '') {
