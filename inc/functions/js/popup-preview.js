@@ -49,6 +49,10 @@ jQuery(document).ready(function ($) {
 
         console.log("URL del video:", videoUrl);
 
+        // Extrae el ID del video desde la URL
+        var videoFileId = extractFileIdFromUrl(videoUrl); // Usa la función para obtener el ID
+        var videoDownloadUrl = createDownloadUrl(videoFileId); // Usa el ID extraído para crear la URL de descarga
+
         // Crear el contenedor del popup (overlay)
         var overlay = createOverlay();
 
@@ -70,8 +74,6 @@ jQuery(document).ready(function ($) {
         var closeButton = createCloseButton(overlay);
 
         // Botón de descarga
-        var videoFileId = $(this).data('file-id'); // Obtén el ID del archivo para el video
-        var videoDownloadUrl = createDownloadUrl(videoFileId); // Llama a la función para obtener la URL de descarga
         var videoDownloadButton = createDownloadButton(videoDownloadUrl); // Crear botón de descarga
 
         // Agregar el botón de descarga y el de cierre al overlay
@@ -82,6 +84,12 @@ jQuery(document).ready(function ($) {
     // Función para crear la URL de descarga
     function createDownloadUrl(fileId) {
         return 'https://drive.google.com/uc?export=download&id=' + fileId; // URL de descarga directa
+    }
+
+    // Función para extraer el ID del archivo desde la URL de vista previa
+    function extractFileIdFromUrl(url) {
+        var match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+        return match ? match[1] : null;
     }
 
     // Función para crear el overlay
