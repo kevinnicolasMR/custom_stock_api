@@ -3,115 +3,112 @@ require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
 // Función para manejar la solicitud AJAX
 function get_folder_content() {
-    // Verifica si se proporciona el ID de la carpeta
-    if (isset($_POST['folder_id'])) {
-        $folderId = sanitize_text_field($_POST['folder_id']); // Sanitiza el ID de la carpeta
+    // ID de la carpeta madre
+    $parentFolderId = '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM';
 
-        // Conecta a Google Drive
-        $driveService = connect_to_google_drive();
+    // Verifica si se proporciona el ID de la carpeta; si no, usa la carpeta madre
+    $folderId = isset($_POST['folder_id']) ? sanitize_text_field($_POST['folder_id']) : $parentFolderId;
 
-        try {
-            // Realiza la consulta para obtener archivos y carpetas en la carpeta
-            $query = sprintf("'%s' in parents", $folderId); // Obtiene archivos y carpetas dentro de la carpeta
-            $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
+    // Conecta a Google Drive
+    $driveService = connect_to_google_drive();
 
-            // Inicializa arreglos para cada tipo de archivo
-            $folders = [];
-            $videos = [];
-            $images = [];
-            $audios = [];
-            $pdfs = [];
+    try {
+        // Realiza la consulta para obtener archivos y carpetas en la carpeta seleccionada
+        $query = sprintf("'%s' in parents", $folderId); 
+        $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
-            // Clasifica los archivos en sus categorías
-            foreach ($files->files as $file) {
-                $mimeType = $file->mimeType;
+        // Inicializa arreglos para cada tipo de archivo
+        $folders = [];
+        $videos = [];
+        $images = [];
+        $audios = [];
+        $pdfs = [];
 
-                if ($mimeType === 'application/vnd.google-apps.folder') {
-                    $folders[] = $file;
-                } elseif (strpos($mimeType, 'video/') === 0) {
-                    $videos[] = $file;
-                } elseif (strpos($mimeType, 'image/') === 0) {
-                    $images[] = $file;
-                } elseif (strpos($mimeType, 'audio/') === 0) {
-                    $audios[] = $file;
-                } elseif ($mimeType === 'application/pdf') {
-                    $pdfs[] = $file;
-                }
+        // Clasifica los archivos en sus categorías
+        foreach ($files->files as $file) {
+            $mimeType = $file->mimeType;
+
+            if ($mimeType === 'application/vnd.google-apps.folder') {
+                $folders[] = $file;
+            } elseif (strpos($mimeType, 'video/') === 0) {
+                $videos[] = $file;
+            } elseif (strpos($mimeType, 'image/') === 0) {
+                $images[] = $file;
+            } elseif (strpos($mimeType, 'audio/') === 0) {
+                $audios[] = $file;
+            } elseif ($mimeType === 'application/pdf') {
+                $pdfs[] = $file;
             }
-
-           // Contenedor de búsqueda
-$output = '<div class="search-container">';
-$output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
-$output .= '<button id="search-button">Buscar</button>';
-$output .= '<button id="clear-button" style="display: none;">X</button>'; // Botón para eliminar el filtrado
-$output .= '</div>';
-
-
-            // Contenedor de archivos
-            $output .= '<div class="file-container">';
-
-            // Genera HTML para carpetas
-            foreach ($folders as $folder) {
-                $output .= '<div class="file-item filter-prop-element file-item-folder clickable-folder" data-folder-id="' . esc_attr($folder->id) . '" style="width: 300px; height: 200px;" alt="' . esc_attr($folder->name) . '">'; // Agregado el atributo alt
-                $output .= '<p class="folder-name">' . esc_html($folder->name) . '</p>';
-                $output .= '</div>';
-            }          
-
-            // Genera HTML para videos
-            foreach ($videos as $video) {
-                $output .= '<div class="file-item file-item-video">';
-                $output .= '<img src="' . esc_url($video->thumbnailLink) . '" alt="' . esc_attr($video->name) . '" class="video-item filter-prop-element" data-video-url="https://drive.google.com/file/d/' . esc_attr($video->id) . '/preview" style="max-width: 100%; height: auto;">';
-                $output .= '</div>';
-            }
-
-            // Genera HTML para imágenes
-            foreach ($images as $image) {
-                $output .= '<div class="file-item file-item-img">';
-                $output .= '<img src="' . esc_url($image->thumbnailLink) . '" alt="' . esc_attr($image->name) . '" class="image-item filter-prop-element" data-image-url="' . esc_url($image->thumbnailLink) . '" data-file-id="' . esc_attr($image->id) . '">';
-                $output .= '</div>';
-            }
-
-            // Genera HTML para audios
-foreach ($audios as $audio) {
-    $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($audio->id) . '/preview';
-    $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($audio->id);
-
-    $output .= '<div class="file-item file-item-audio filter-prop-element" alt="' . esc_attr($audio->name) . '">'; // Clase y alt agregado
-    $output .= '<div class="audio-info-container">';
-    $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
-    $output .= '<button class="load-audio"><i class="fas fa-download"></i></button>';
-    $output .= '<div class="audio-content"></div>';
-    $output .= '</div>';
-    $output .= '<div class="audio-title-container"><p class="audio-title">' . esc_html($audio->name) . '</p></div>';
-    $output .= '</div>';
-    $output .= '<div class="audio-description"><p>Texto de ejemplo aquí</p></div>';
-    $output .= '<div class="audio-download"><a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a></div>';
-    $output .= '</div>';
-}
-
-// Genera HTML para PDFs
-foreach ($pdfs as $pdf) {
-    $output .= '<div class="file-item file-item-pdf filter-prop-element" alt="' . esc_attr($pdf->name) . '">'; // Clase y alt agregado
-    $output .= '<p>' . esc_html($pdf->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($pdf->id) . '/view" target="_blank">Ver PDF</a></p>';
-    $output .= '</div>';
-}
-
-            $output .= '</div>'; // Cierra el contenedor de archivos
-
-            // Si no hay archivos, muestra un mensaje
-            if ($output === '') {
-                $output = '<p>No se encontraron archivos en esta carpeta.</p>';
-            }
-
-            // Retorna la respuesta exitosa
-            wp_send_json_success($output);
-        } catch (Exception $e) {
-            // Maneja errores
-            wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
         }
-    } else {
-        // Responde si no se proporciona un ID
-        wp_send_json_error('No se ha proporcionado un ID de carpeta.');
+
+        // Contenedor de búsqueda
+        $output = '<div class="search-container">';
+        $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
+        $output .= '<button id="search-button">Buscar</button>';
+        $output .= '<button id="clear-button" style="display: none;">X</button>'; // Botón para eliminar el filtrado
+        $output .= '</div>';
+
+        // Contenedor de archivos
+        $output .= '<div class="file-container">';
+
+        // Genera HTML para carpetas
+        foreach ($folders as $folder) {
+            $output .= '<div class="file-item filter-prop-element file-item-folder clickable-folder" data-folder-id="' . esc_attr($folder->id) . '" style="width: 300px; height: 200px;" alt="' . esc_attr($folder->name) . '">';
+            $output .= '<p class="folder-name">' . esc_html($folder->name) . '</p>';
+            $output .= '</div>';
+        }
+
+        // Genera HTML para videos
+        foreach ($videos as $video) {
+            $output .= '<div class="file-item file-item-video">';
+            $output .= '<img src="' . esc_url($video->thumbnailLink) . '" alt="' . esc_attr($video->name) . '" class="video-item filter-prop-element" data-video-url="https://drive.google.com/file/d/' . esc_attr($video->id) . '/preview" style="max-width: 100%; height: auto;">';
+            $output .= '</div>';
+        }
+
+        // Genera HTML para imágenes
+        foreach ($images as $image) {
+            $output .= '<div class="file-item file-item-img">';
+            $output .= '<img src="' . esc_url($image->thumbnailLink) . '" alt="' . esc_attr($image->name) . '" class="image-item filter-prop-element" data-image-url="' . esc_url($image->thumbnailLink) . '" data-file-id="' . esc_attr($image->id) . '">';
+            $output .= '</div>';
+        }
+
+        // Genera HTML para audios
+        foreach ($audios as $audio) {
+            $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($audio->id) . '/preview';
+            $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($audio->id);
+
+            $output .= '<div class="file-item file-item-audio filter-prop-element" alt="' . esc_attr($audio->name) . '">';
+            $output .= '<div class="audio-info-container">';
+            $output .= '<div class="audio-container" data-audio-url="' . esc_url($audioUrl) . '">';
+            $output .= '<button class="load-audio"><i class="fas fa-download"></i></button>';
+            $output .= '<div class="audio-content"></div>';
+            $output .= '</div>';
+            $output .= '<div class="audio-title-container"><p class="audio-title">' . esc_html($audio->name) . '</p></div>';
+            $output .= '</div>';
+            $output .= '<div class="audio-description"><p>Texto de ejemplo aquí</p></div>';
+            $output .= '<div class="audio-download"><a href="' . esc_url($downloadUrl) . '" class="download-audio-button" target="_blank" download>Descargar</a></div>';
+            $output .= '</div>';
+        }
+
+        // Genera HTML para PDFs
+        foreach ($pdfs as $pdf) {
+            $output .= '<div class="file-item file-item-pdf filter-prop-element" alt="' . esc_attr($pdf->name) . '">';
+            $output .= '<p>' . esc_html($pdf->name) . ' <a href="https://drive.google.com/file/d/' . esc_attr($pdf->id) . '/view" target="_blank">Ver PDF</a></p>';
+            $output .= '</div>';
+        }
+
+        $output .= '</div>'; // Cierra el contenedor de archivos
+
+        // Si no hay archivos, muestra un mensaje
+        if (empty($files->files)) {
+            $output = '<p>No se encontraron archivos en esta carpeta.</p>';
+        }
+
+        // Retorna la respuesta exitosa
+        wp_send_json_success($output);
+    } catch (Exception $e) {
+        // Maneja errores
+        wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
 
