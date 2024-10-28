@@ -3,7 +3,7 @@ jQuery(document).ready(function ($) {
 
     // Asignar el evento de clic al botón de búsqueda
     $(document).on('click', '#search-button', function () {
-        var searchText = $('#search-input').val().toLowerCase(); // Obtener el texto del input en minúsculas
+        var searchText = normalizeString($('#search-input').val().toLowerCase()); // Normalizar y obtener el texto del input
         console.log("Texto ingresado:", searchText); // Mostrar el texto en la consola
 
         // Filtrar y mostrar elementos
@@ -13,7 +13,7 @@ jQuery(document).ready(function ($) {
     // Asignar el evento de tecla al input de búsqueda
     $(document).on('keyup', '#search-input', function (e) {
         if (e.key === 'Enter') {
-            var searchText = $('#search-input').val().toLowerCase(); // Obtener el texto del input en minúsculas
+            var searchText = normalizeString($('#search-input').val().toLowerCase()); // Normalizar y obtener el texto del input
             console.log("Texto ingresado:", searchText); // Mostrar el texto en la consola
 
             // Filtrar y mostrar elementos
@@ -29,6 +29,11 @@ jQuery(document).ready(function ($) {
         console.log("Filtro eliminado"); // Mensaje en la consola
     });
 
+    // Función para normalizar el texto (eliminar acentos)
+    function normalizeString(text) {
+        return text.normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // Normaliza y elimina los acentos
+    }
+
     // Función para filtrar los elementos según el texto de búsqueda
     function filterItems(searchText) {
         // Bandera para verificar si se encontraron coincidencias
@@ -37,9 +42,10 @@ jQuery(document).ready(function ($) {
         // Iterar sobre cada elemento con la clase .filter-prop-element
         $('.filter-prop-element').each(function () {
             var altText = $(this).attr('alt'); // Obtén el texto de alt directamente del elemento img
+            var itemText = normalizeString($(this).closest('.file-item').text().toLowerCase()); // Normaliza el texto del contenedor
 
-            // Compara el altText (en minúsculas) con el texto de búsqueda (en minúsculas)
-            if (altText && altText.toLowerCase().includes(searchText)) {
+            // Compara el altText (en minúsculas) o el texto del contenedor (en minúsculas) con el texto de búsqueda (en minúsculas)
+            if ((altText && normalizeString(altText).toLowerCase().includes(searchText)) || itemText.includes(searchText)) {
                 $(this).closest('.file-item').show(); // Muestra el contenedor del elemento si coincide
                 encontrado = true; // Cambia la bandera a verdadero
                 console.log("Archivo encontrado:", altText); // Muestra los elementos que coinciden
