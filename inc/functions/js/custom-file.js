@@ -24,7 +24,8 @@ jQuery(document).ready(function($) {
 
         // Inserta el iframe solo si aún no se ha cargado
         if (audioContent.is(':empty')) {
-            audioContent.html('<iframe src="' + audioUrl + '" width="100%" height="85" frameborder="0" allow="autoplay"></iframe>');
+            audioContent.html('<iframe src="' + audioUrl + '"display="flex" width="100%" height="100%" frameborder="0" allow="autoplay"></iframe>');
+            
         }
     });
 
