@@ -32,13 +32,16 @@
 .menu-folder{
 	font-size: 20px;
 	line-height: 23px;
-	margin-bottom: 10px
+	margin-bottom: 10px;
+	color: black
+
 }
 
 .submenu-folder{
 	font-size: 15px;
 	margin: 0px !important;
-	line-height: 20px
+	line-height: 20px;
+	color: black
 }
 
 
@@ -59,17 +62,21 @@ p{
 	border-left: 1px solid;
 	padding-left: 5px;
 	cursor: pointer;
+	color: black
+
 }
 
 .level-1{
 	padding-left: 10px;
 	cursor: pointer;
-		cursor: pointer;
+	color: black
+
 }
 
 .level-2{
 	padding-left: 10px;
-	cursor: pointer;	
+	cursor: pointer;
+	color: black
 }
 
 .file-item-container{
@@ -100,21 +107,21 @@ p{
 
 .image-item{
 	width: 300px !important;
-	height: 100% !important;
+	height: 100% !important;	
 }
 
 
-
 .file-item{
-	margin-bottom: 5px;
-	margin-right: 5px;
+	margin-bottom: 2px;
+	margin-right: 2px;
+	cursor: pointer !important;
 }
 
 .file-item-audio{
 	width: 300px;
 	height: 200px;
 	padding: 10px 10px;
-	border: 1px solid;
+	border: 1px black solid;
 }
 
 .audio-info-container{
@@ -235,13 +242,19 @@ p{
     100% { transform: rotate(360deg); }
 }
 
-.file-item-folder{
-	border: 1px solid;
+.file-item-folder{	
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+	border: 1px solid black;
 }
+
+.file-item-folder p{
+	color: black;
+	font-weight: 600;
+	font-size: 18px
+}	
 
 .file-item-pdf{
 	width: 300px;
@@ -261,7 +274,26 @@ p{
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+	flex-wrap: wrap;
+	align-content: center;
 }
+.file-item-font p{
+	width: 100%;
+	text-align: center;
+	margin: 0px 0px 10px 0px;
+	color: black;
+	font-weight: 600
+}	
+
+.file-item-font a{
+	padding: 4px 15px;
+	border: 1px solid;
+}
+.file-item-font a:hover{
+	border: 1px solid black !important;
+}
+
+
 
 .search-container{
 	width: 100%;
@@ -269,13 +301,22 @@ p{
 	padding: none;
 	display: flex;
 	justify-content: center;
+	align-items: center;
 
 }
 
 #search-input{
-	width: 60% !important;	
+	width: 70% !important;
+	border-radius: 50px;
+	padding: 10px 20px;
+	border: none;
 }
 
+#search-input:focus{
+	outline: none !important;
+	box-shadow: none !important; 
+
+}
 
 .file-container{
 	display: flex;
@@ -283,7 +324,56 @@ p{
 	justify-content: center;
 }
 
+#load-more-button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#load-more-button:hover {
+    background-color: #005177;
+}
 
+#search-button{
+	background-color: #0000;
+	border: 2px solid;
+	padding: 12px 12px;
+	margin: 0px 10px;
+	cursor: pointer;
+	border-radius: 50px !important;
+}
 
+#clear-button{	
+	padding: 5px 10px;
+	border: 2px solid;	
+	background-color: #0000;
+	border-radius: 100px !important;
+	cursor: pointer;
+}
+
+#clear-button:hover{
+	background-color: black;
+	color: white;
+	border: 2px solid black;
+}	
+
+.customize-unpreviewable{
+	border: 2px solid black;
+	background-color: white !important;
+	color: black !important;
+	cursor: pointer !important;
+	border-radius: 50px !important;
+	font-weight: 600;
+}
+
+.customize-unpreviewable:hover{
+	background-color: black !important;
+	color: white !important;
+	border: 2px solid black !important;
+}
 
 
