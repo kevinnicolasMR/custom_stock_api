@@ -1,0 +1,289 @@
+.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)) {
+    max-width: none; 
+}
+
+#drive-folders-container{
+	display: flex;
+	width: 100%;
+}
+#folder-menu{
+	width: 20%;
+}
+
+#folder-content{
+	width: 80%;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	justify-content: center
+	
+}
+.media-preview{
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.media-item{
+	display: flex !important;
+	margin: 5px;
+}
+
+.menu-folder{
+	font-size: 20px;
+	line-height: 23px;
+	margin-bottom: 10px
+}
+
+.submenu-folder{
+	font-size: 15px;
+	margin: 0px !important;
+	line-height: 20px
+}
+
+
+.hideContentMenu {
+    display: none; /* Oculta el contenido */
+}
+
+.visibleContentMenu {
+    display: block; /* Muestra el contenido */
+}
+
+p{
+	padding: 0px;											
+}
+
+
+.level-0-wrapper{
+	border-left: 1px solid;
+	padding-left: 5px;
+	cursor: pointer;
+}
+
+.level-1{
+	padding-left: 10px;
+	cursor: pointer;
+		cursor: pointer;
+}
+
+.level-2{
+	padding-left: 10px;
+	cursor: pointer;	
+}
+
+.file-item-container{
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	justify-content: center;
+}
+
+
+.file-item-img{
+	height: 200px;
+	width: 300px;
+	cursor: pointer;
+}
+
+.file-item-video{
+	height: 200px;
+	width: 300px;
+}
+
+.file-item-video img{
+	width: 100%;
+	height: 100% !important;
+}
+
+
+.image-item{
+	width: 300px !important;
+	height: 100% !important;
+}
+
+
+
+.file-item{
+	margin-bottom: 5px;
+	margin-right: 5px;
+}
+
+.file-item-audio{
+	width: 300px;
+	height: 200px;
+	padding: 10px 10px;
+	border: 1px solid;
+}
+
+.audio-info-container{
+	display: flex;
+	width: 100%;
+}
+
+.audio-play-btn{
+	display: flex;
+	width:20%;
+}
+
+.audio-title{
+	width: 80%;
+	display: flex;
+	justify-content: left;
+}
+
+.audio-description{
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	padding: 5px 0px
+}
+
+.audio-download{
+	display: flex;
+	justify-content: right;
+	width: 100%;
+}
+
+.download-audio-button{
+	cursor: pointer !important;
+}
+
+.download-audio-button {
+    background-color: #4CAF50; /* Color del botón */
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+
+
+.file-item-audio{
+	border: 1px solid;
+}
+
+
+.audio-info-container{
+		display: flex;
+	width: 100%;
+	height: 33%; 
+	border: 1px ;	
+}
+
+.audio-title-container{
+		width: 80%
+}
+
+.audio-container{
+	  width: 20%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+
+.audio-content{
+	width: 300px;	
+		opacity: 0.1;
+}
+
+.audio-content iframe {
+    width: 300px;	
+    height: 50px;
+}
+
+.audio-title{
+	font-size: 12px;
+	line-height: 13px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: left;
+	align-items: center;
+}
+
+.audio-description{
+	height: 36%;
+	display: flex;
+	align-items: center;
+}
+
+.audio-download{
+	height: 30%;
+	display: flex;
+	align-items: center;
+}
+
+.fa-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.file-item-folder{
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.file-item-pdf{
+	width: 300px;
+	height: 200px;
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.file-item-font{	
+	width: 300px;
+	height: 200px;
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.search-container{
+	width: 100%;
+	margin: 0px 0px 20px 0px;
+	padding: none;
+	display: flex;
+	justify-content: center;
+
+}
+
+#search-input{
+	width: 60% !important;	
+}
+
+
+.file-container{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+
+
+
+
