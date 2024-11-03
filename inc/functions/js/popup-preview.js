@@ -1,21 +1,17 @@
+// Funcionalidad del Popup al momento de hacer click en las imagenes y videos
+
 jQuery(document).ready(function ($) {
 
-    // Evento para imágenes
     $('#folder-content').on('click', '.image-item', function (event) {
         event.preventDefault();
 
-        var imageUrl = $(this).data('image-url'); // Obtén la URL de la imagen
-        var fileId = $(this).data('file-id'); // Obtén el ID del archivo
+        var imageUrl = $(this).data('image-url'); 
+        var fileId = $(this).data('file-id'); 
 
-        // Cambiar el tamaño de la imagen para alta resolución
-        var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800'); // Cambia '800' por el tamaño que desees
+        var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800'); 
 
-        console.log("URL de la imagen alta resolución:", highResImageUrl);
-
-        // Crear el contenedor del popup (overlay)
         var overlay = createOverlay();
 
-        // Crear la imagen
         var img = $('<img>').attr('src', highResImageUrl).css({
             maxWidth: '90%',
             maxHeight: '90%',
@@ -24,39 +20,31 @@ jQuery(document).ready(function ($) {
 
         overlay.append(img);
 
-        // Botón de descarga
-        var downloadUrl = createDownloadUrl(fileId); // Llama a la función para obtener la URL de descarga
+        var downloadUrl = createDownloadUrl(fileId); 
         var downloadButton = createDownloadButton(downloadUrl);
 
-        // Botón de cierre
         var closeButton = createCloseButton(overlay);
 
-        // Agregar los botones y la imagen al overlay
         overlay.append(downloadButton).append(closeButton);
         $('body').append(overlay);
 
-        // Evitar que el clic en la imagen cierre el popup
         img.on('click', function (event) {
             event.stopPropagation();
         });
     });
 
-    // Evento para videos
     $('#folder-content').on('click', '.video-item', function (event) {
         event.preventDefault();
 
-        var videoUrl = $(this).data('video-url'); // Obtén la URL del video
+        var videoUrl = $(this).data('video-url'); 
 
         console.log("URL del video:", videoUrl);
 
-        // Extrae el ID del video desde la URL
-        var videoFileId = extractFileIdFromUrl(videoUrl); // Usa la función para obtener el ID
-        var videoDownloadUrl = createDownloadUrl(videoFileId); // Usa el ID extraído para crear la URL de descarga
+        var videoFileId = extractFileIdFromUrl(videoUrl); 
+        var videoDownloadUrl = createDownloadUrl(videoFileId); 
 
-        // Crear el contenedor del popup (overlay)
         var overlay = createOverlay();
 
-        // Crear el iframe para el video
         var iframe = $('<iframe>', {
             src: videoUrl,
             width: '60%',
@@ -70,29 +58,23 @@ jQuery(document).ready(function ($) {
 
         overlay.append(iframe);
 
-        // Botón de cierre
         var closeButton = createCloseButton(overlay);
 
-        // Botón de descarga
-        var videoDownloadButton = createDownloadButton(videoDownloadUrl); // Crear botón de descarga
+        var videoDownloadButton = createDownloadButton(videoDownloadUrl); 
 
-        // Agregar el botón de descarga y el de cierre al overlay
         overlay.append(videoDownloadButton).append(closeButton);
         $('body').append(overlay);
     });
 
-    // Función para crear la URL de descarga
     function createDownloadUrl(fileId) {
-        return 'https://drive.google.com/uc?export=download&id=' + fileId; // URL de descarga directa
+        return 'https://drive.google.com/uc?export=download&id=' + fileId; 
     }
 
-    // Función para extraer el ID del archivo desde la URL de vista previa
     function extractFileIdFromUrl(url) {
         var match = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
         return match ? match[1] : null;
     }
 
-    // Función para crear el overlay
     function createOverlay() {
         var overlay = $('<div></div>').css({
             position: 'fixed',
@@ -107,7 +89,6 @@ jQuery(document).ready(function ($) {
             zIndex: 10000
         });
 
-        // Cerrar el popup al hacer clic en el overlay
         overlay.on('click', function () {
             overlay.remove();
         });
@@ -115,7 +96,6 @@ jQuery(document).ready(function ($) {
         return overlay;
     }
 
-    // Función para crear el botón de descarga
     function createDownloadButton(downloadUrl) {
         return $('<a>Descargar</a>').attr('href', downloadUrl).attr('target', '_blank').css({
             position: 'absolute',
@@ -131,7 +111,6 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    // Función para crear el botón de cierre
     function createCloseButton(overlay) {
         var closeButton = $('<span>&times;</span>').css({
             position: 'absolute',

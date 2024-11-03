@@ -1,13 +1,13 @@
+// Navegabilidad al momento de hacer click en un file-item-folder que nos permite movernos entre carpetas.
+
 jQuery(document).ready(function($) {
-    // Función para manejar el clic en las carpetas del contenido
     $('#folder-content').on('click', '.clickable-folder', function() {
         var folderId = $(this).data('folder-id');
 
-        // Muestra un mensaje de carga
         $('#loading-message').show();
 
         $.ajax({
-            url: ajax_object.ajax_url,  // usa ajax_object en lugar de ajaxurl
+            url: ajax_object.ajax_url,  
             type: 'POST',
             data: {
                 action: 'get_folder_content',
@@ -29,4 +29,3 @@ jQuery(document).ready(function($) {
 });
 
 
-console.log("El  papa")

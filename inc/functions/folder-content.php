@@ -64,7 +64,7 @@ $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
 
         // Contador para los elementos mostrados
         $fileCount = 0;
-
+ 
         // Generar el contenido a cargar
         $fileContent = ''; 
 

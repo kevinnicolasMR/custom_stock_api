@@ -1,12 +1,9 @@
 jQuery(document).ready(function ($) {
-    let currentFolderId = ""; // Almacena el ID de la carpeta actual
-
-    // Función para cargar el contenido de la carpeta
+    let currentFolderId = ""; 
     function loadFolderContent(folderId) {
         currentFolderId = folderId; // Actualiza el ID de la carpeta actual
         console.log("Cargando contenido para la carpeta:", currentFolderId);
 
-        // Aquí va tu código AJAX para cargar el contenido de la carpeta
         $.ajax({
             url: ajax_object.ajax_url,
             method: "POST",
@@ -16,7 +13,7 @@ jQuery(document).ready(function ($) {
             },
             beforeSend: function() {
                 $("#loading-message").show();
-                $("#folder-content").html(""); // Limpiar contenido anterior
+                $("#folder-content").html(""); 
             },
             success: function(response) {
                 $("#loading-message").hide();
@@ -33,17 +30,14 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    // Manejo del clic en las carpetas
     $(document).on("click", ".clickable-folder", function () {
         const folderId = $(this).data("folder-id");
         loadFolderContent(folderId);
     });
 
-    // Manejo del clic en el botón de retroceso
     $(document).on("click", "#back-button", function () {
         console.log("ID de la carpeta actual:", currentFolderId);
-        // Aquí puedes implementar la lógica para volver a la carpeta anterior
+       
     });
 
-    console.log("Funcionando");
 });

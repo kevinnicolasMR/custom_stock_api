@@ -8,12 +8,11 @@ Author: Kevin Nicolas Medina Robles
 
 if (!defined('ABSPATH')) exit; 
 
-// Definir constantes del plugin (como rutas y URL base)
 define('WP_STOCK_MULTIMEDIA_PATH', plugin_dir_path(__FILE__));
 define('WP_STOCK_MULTIMEDIA_URL', plugin_dir_url(__FILE__));
 
 require_once WP_STOCK_MULTIMEDIA_PATH . 'inc/api-connection.php';  
-require_once WP_STOCK_MULTIMEDIA_PATH . 'inc/shortcode-creation.php';  
+require_once WP_STOCK_MULTIMEDIA_PATH . 'inc/general-plugin-creation.php';  
 require_once WP_STOCK_MULTIMEDIA_PATH . 'inc/admin-page.php';  
 
 

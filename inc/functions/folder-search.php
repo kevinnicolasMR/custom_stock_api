@@ -1,13 +1,10 @@
 <?php
-// Asegúrate de incluir la conexión con Google API si es necesario
 require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
-// ID de la carpeta madre predeterminada
 define('PARENT_FOLDER_ID', '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM');
 
-// Modificación en la función render_subfolders
 function render_subfolders($driveService, $folderId, $level = 0) {
-    $output = ''; // Inicia la salida vacía
+    $output = ''; 
     try {
         $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
         $subFolders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
@@ -22,10 +19,9 @@ function render_subfolders($driveService, $folderId, $level = 0) {
     } catch (Exception $e) {
         $output .= '<p>Error al obtener subcarpetas: ' . esc_html($e->getMessage()) . '</p>';
     }
-    return $output; // Retorna el contenido generado
+    return $output; 
 }
 
-// Función para mostrar las carpetas de Google Drive
 function display_drive_folders_menu($atts) {
     $atts = shortcode_atts(array('ids' => ''), $atts, 'drive_folders');
     if (empty($atts['ids'])) {
@@ -34,13 +30,10 @@ function display_drive_folders_menu($atts) {
     $driveService = connect_to_google_drive();
     $folderIds = explode(',', $atts['ids']);
     
-    // Contenedor principal
     $output = '<div id="drive-folders-container">';
     
-    // Contenedor del menú de carpetas
     $output .= '<div id="folder-menu">';
     
-    // Nuevo contenedor para las carpetas de nivel 0 con una clase específica
     $output .= '<div class="level-0-wrapper">'; 
 
     foreach ($folderIds as $folderId) {
@@ -48,7 +41,6 @@ function display_drive_folders_menu($atts) {
         try {
             $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
             
-            // Cada carpeta de nivel 0
             $output .= '<div class="subfolder level-0 clickable-folder" data-folder-id="' . esc_attr($folderId) . '">';
             $output .= '<p>' . esc_html($folder->name) . '</p>';  
             $output .= render_subfolders($driveService, $folderId, 1);
@@ -57,56 +49,55 @@ function display_drive_folders_menu($atts) {
             $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
         }
     }
-
-    // Cierra el contenedor de level-0-wrapper
+ 
     $output .= '</div>'; 
 
-    // Div para mostrar el mensaje de carga dentro del div de contenido
     $output .= '</div><div id="folder-content"><div id="loading-message" style="display:none;">Cargando...</div></div></div>';
 
-    // Agregar JavaScript para cargar automáticamente la carpeta madre en el área de contenido
-    $output .= '
-        <script>
-            jQuery(document).ready(function ($) {
-                const parentFolderId = "' . PARENT_FOLDER_ID . '";
-                
-                function loadFolderContent(folderId) {
-                    $.ajax({
-                        url: ajax_object.ajax_url,
-                        method: "POST",
-                        data: {
-                            action: "get_folder_content",
-                            folder_id: folderId
-                        },
-                        beforeSend: function() {
-                            $("#loading-message").show();
-                            $("#folder-content").html("");
-                        },
-                        success: function (response) {
-                            $("#loading-message").hide();
-                            if (response.success) {
-                                $("#folder-content").html(response.data);
-                            } else {
-                                $("#folder-content").html("<p>Error al cargar el contenido.</p>");
-                            }
-                        },
-                        error: function () {
-                            $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
-                        }
-                    });
+$output .= '
+<script>
+    jQuery(document).ready(function ($) {
+        const parentFolderId = "' . PARENT_FOLDER_ID . '";
+        
+        function loadFolderContent(folderId) {
+            $.ajax({
+                url: ajax_object.ajax_url,
+                method: "POST",
+                data: {
+                    action: "get_folder_content",
+                    folder_id: folderId
+                },
+                beforeSend: function() {
+                    $("#loading-message").show();
+                    $("#folder-content").html("");
+                },
+                success: function (response) {
+                    $("#loading-message").hide();
+                    if (response.success) {
+                        $("#folder-content").html(response.data);
+                    } else {
+                        $("#folder-content").html("<p>Error al cargar el contenido.</p>");
+                    }
+                },
+                error: function () {
+                    $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
                 }
-
-                // Cargar automáticamente la carpeta madre al inicio
-                loadFolderContent(parentFolderId);
-
-                // Cargar carpetas al hacer clic en el menú de la izquierda
-                $(document).on("click", ".clickable-folder", function () {
-                    const folderId = $(this).data("folder-id");
-                    loadFolderContent(folderId);
-                });
             });
-        </script>
-    ';
+        }
+
+        // Cargar automáticamente la carpeta madre al inicio, pero en segundo plano
+        window.onload = function() {
+            loadFolderContent(parentFolderId);
+        };
+
+        // Cargar carpetas al hacer clic en el menú de la izquierda
+        $(document).on("click", ".clickable-folder", function () {
+            const folderId = $(this).data("folder-id");
+            loadFolderContent(folderId);
+        });
+    });
+</script>
+';
 
     return $output;
 }
