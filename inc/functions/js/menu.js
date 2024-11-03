@@ -73,6 +73,61 @@ jQuery(document).ready(function($) {
 
     // Iniciar el manejo de eventos
     handleFolderClick();
+
+    
+    // Función para manejar el clic en el botón "Ver más contenido"
+$(document).on('click', '#load-more', function() {
+    const folderId = $(this).data('folder-id'); // Obtener el ID de la carpeta actual
+    const currentItems = $('.file-container > div').length; // Contar los elementos actuales mostrados
+    const limit = 5; // Límite de elementos a cargar cada vez
+
+    // Realizar una solicitud AJAX para obtener el contenido de la carpeta
+    $.ajax({
+        url: ajax_object.ajax_url,
+        type: 'POST',
+        data: {
+            action: 'get_folder_content',
+            folder_id: folderId,
+            offset: currentItems, // Enviar el número de elementos ya mostrados
+            limit: limit // Enviar el límite para la próxima carga
+        },
+        success: function(response) {
+            if (response.success) {
+                // Agregar nuevos elementos al contenedor
+                $('#folder-content').append(response.data);
+                
+                // Verificar si aún hay más elementos para mostrar
+                if (response.more_content_available) {
+                    $('#load-more').show(); // Mostrar el botón "Ver más contenido"
+                } else {
+                    $('#load-more').hide(); // Ocultar el botón si no hay más elementos
+                }
+            } else {
+                console.error(response.data);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+        }
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 });
 
 

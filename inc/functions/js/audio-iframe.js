@@ -15,17 +15,16 @@ jQuery(document).ready(function($) {
         }, 5000);
 
         // Lógica del iframe para cargar el audio
-        var container = button.closest('.audio-container'); // Encuentra el contenedor del audio
-        var audioUrl = container.data('audio-url'); // Obtén la URL del audio del atributo data
-        var audioContent = container.find('.audio-content'); // Encuentra el div donde se insertará el iframe
+        var container = button.closest('.file-item'); // Encuentra el contenedor principal
+        var audioUrl = container.find('.audio-container').data('audio-url'); // Obtén la URL del audio del atributo data
+        var audioContent = container.find('.img-preview-audio-google-drive .audio-content'); // Encuentra el div audio-content dentro de img-preview-audio-google-drive
 
         // Verifica si la URL es correcta
         console.log('URL de audio:', audioUrl);
 
         // Inserta el iframe solo si aún no se ha cargado
         if (audioContent.is(':empty')) {
-            audioContent.html('<iframe src="' + audioUrl + '"display="flex" width="100%" height="100%" frameborder="0" allow="autoplay"></iframe>');
-            
+            audioContent.html('<iframe src="' + audioUrl + '" display="flex" width="100%" height="100%" frameborder="0" allow="autoplay"></iframe>');
         }
     });
 

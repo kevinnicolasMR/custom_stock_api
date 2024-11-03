@@ -11,15 +11,15 @@ function render_audio_template($file) {
                 <div class="audio-title-container">
                     <p class="audio-title"><?php echo esc_html($file->name); ?></p>
                 </div>
-                <div class="audio-content"></div>
             </div>        
         </div>
+
+        <!-- Contenedor de la imagen de vista previa y audio-content juntos -->
         <div class="img-preview-audio-google-drive"> 
-        <img src="<?php echo plugins_url('img/preview-audio.png', __FILE__); ?>" alt="Audio Preview" class="img-preview-audio">
+            <img src="<?php echo plugins_url('img/preview-audio.png', __FILE__); ?>" alt="Audio Preview" class="img-preview-audio">
+            <div class="audio-content"></div> <!-- Ahora este div está dentro de img-preview-audio-google-drive -->
         </div>
-        <div class="audio-description">
-            <p>Texto de ejemplo aquí</p>
-        </div>
+
         <div class="audio-download">
             <a href="<?php echo esc_url($downloadUrl); ?>" class="download-audio-button" target="_blank" download>Descargar</a>
         </div>

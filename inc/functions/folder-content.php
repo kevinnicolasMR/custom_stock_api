@@ -16,16 +16,17 @@ function get_folder_content() {
     $driveService = connect_to_google_drive();
 
     try {
-        $query = sprintf("'%s' in parents", $folderId); 
+        $query = sprintf("'%s' in parents", $folderId);
         $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
+        // Inicializa los arrays para clasificar los archivos
         $folders = [];
         $videos = [];
         $images = [];
         $audios = [];
         $pdfs = [];
-        $fonts = []; // Nuevo arreglo para fuentes
-
+        $fonts = [];
+        
         foreach ($files->files as $file) {
             $mimeType = $file->mimeType;
 
@@ -44,6 +45,9 @@ function get_folder_content() {
             }
         }
 
+        // Obtener los parámetros de paginación
+        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+        $limit = 5; // Límite de elementos a mostrar
         $output = '<div class="search-container">';
         $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
         $output .= '<button id="search-button">Buscar</button>';
@@ -52,34 +56,68 @@ function get_folder_content() {
 
         $output .= '<div class="file-container">';
 
+        // Contador total de archivos
+        $totalFiles = count($folders) + count($videos) + count($images) + count($audios) + count($pdfs) + count($fonts);
+        $moreContentAvailable = $totalFiles > ($offset + $limit); // Verifica si hay más archivos que mostrar
+
+        // Contador para los elementos mostrados
+        $fileCount = 0; 
+
+        // Renderizar carpetas
         foreach ($folders as $folder) {
-            $output .= render_folder_template($folder);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_folder_template($folder);
+            }
+            $fileCount++;
         }
 
+        // Renderizar videos
         foreach ($videos as $video) {
-            $output .= render_video_template($video);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_video_template($video);
+            }
+            $fileCount++;
         }
 
+        // Renderizar imágenes
         foreach ($images as $image) {
-            $output .= render_image_template($image);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_image_template($image);
+            }
+            $fileCount++;
         }
 
+        // Renderizar audios
         foreach ($audios as $audio) {
-            $output .= render_audio_template($audio);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_audio_template($audio);
+            }
+            $fileCount++;
         }
 
+        // Renderizar PDFs
         foreach ($pdfs as $pdf) {
-            $output .= render_pdf_template($pdf);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_pdf_template($pdf);
+            }
+            $fileCount++;
         }
 
+        // Renderizar fuentes
         foreach ($fonts as $font) {
-            $output .= render_font_template($font);
+            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+                $output .= render_font_template($font);
+            }
+            $fileCount++;
         }
 
         $output .= '</div>';
 
-        if (empty($files->files)) {
-            $output = '<p>No se encontraron archivos en esta carpeta.</p>';
+        // Agregar botón "Ver más contenido" si hay más archivos
+        if ($moreContentAvailable) {
+            $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
+        } else {
+            $output .= '<p>No se encontraron más archivos en esta carpeta.</p>';
         }
 
         wp_send_json_success($output);
@@ -87,6 +125,8 @@ function get_folder_content() {
         wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
+
+
 
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
