@@ -25,7 +25,7 @@ function get_folder_content() {
         $audios = [];
         $pdfs = [];
         $fonts = [];
-        
+
         foreach ($files->files as $file) {
             $mimeType = $file->mimeType;
 
@@ -46,10 +46,10 @@ function get_folder_content() {
 
         // Obtener los parámetros de paginación
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
-        $limit = 5; // Límite de elementos a mostrar
+        $limit = 10; // Límite de elementos a mostrar
         $output = '';
 
-        // Generar el search-container solo en la primera carga
+        // Solo en la primera carga, generamos el contenedor de búsqueda
         if ($offset === 0) {
             $output .= '<div class="search-container">';
             $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
@@ -58,19 +58,20 @@ function get_folder_content() {
             $output .= '</div>';
         }
 
-        $output .= '<div class="file-container">';
-
         // Contador total de archivos
         $totalFiles = count($folders) + count($videos) + count($images) + count($audios) + count($pdfs) + count($fonts);
         $moreContentAvailable = $totalFiles > ($offset + $limit); // Verifica si hay más archivos que mostrar
 
         // Contador para los elementos mostrados
-        $fileCount = 0; 
+        $fileCount = 0;
+
+        // Generar el contenido a cargar
+        $fileContent = ''; 
 
         // Renderizar carpetas
         foreach ($folders as $folder) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_folder_template($folder);
+                $fileContent .= render_folder_template($folder);
             }
             $fileCount++;
         }
@@ -78,7 +79,7 @@ function get_folder_content() {
         // Renderizar videos
         foreach ($videos as $video) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_video_template($video);
+                $fileContent .= render_video_template($video);
             }
             $fileCount++;
         }
@@ -86,7 +87,7 @@ function get_folder_content() {
         // Renderizar imágenes
         foreach ($images as $image) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_image_template($image);
+                $fileContent .= render_image_template($image);
             }
             $fileCount++;
         }
@@ -94,7 +95,7 @@ function get_folder_content() {
         // Renderizar audios
         foreach ($audios as $audio) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_audio_template($audio);
+                $fileContent .= render_audio_template($audio);
             }
             $fileCount++;
         }
@@ -102,7 +103,7 @@ function get_folder_content() {
         // Renderizar PDFs
         foreach ($pdfs as $pdf) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_pdf_template($pdf);
+                $fileContent .= render_pdf_template($pdf);
             }
             $fileCount++;
         }
@@ -110,18 +111,22 @@ function get_folder_content() {
         // Renderizar fuentes
         foreach ($fonts as $font) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $output .= render_font_template($font);
+                $fileContent .= render_font_template($font);
             }
             $fileCount++;
         }
 
-        $output .= '</div>';
+        // Agregar el contenido generado al contenedor principal si es la primera carga
+        if ($offset === 0) {
+            $output .= '<div class="file-container">' . $fileContent . '</div>';
+        } else {
+            // En cargas posteriores, solo se envía el contenido sin el contenedor principal
+            $output = $fileContent;
+        }
 
         // Agregar botón "Ver más contenido" si hay más archivos
         if ($moreContentAvailable) {
             $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
-        } else {
-            $output .= '<p>No se encontraron más archivos en esta carpeta.</p>';
         }
 
         wp_send_json_success($output);
@@ -132,7 +137,7 @@ function get_folder_content() {
 
 
 
- 
+
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');

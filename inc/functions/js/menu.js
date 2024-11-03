@@ -81,6 +81,9 @@ $(document).on('click', '#load-more', function() {
     const currentItems = $('.file-container > div').length; // Contar los elementos actuales mostrados
     const limit = 5; // Límite de elementos a cargar cada vez
 
+    // Ocultar el botón mientras se carga
+    $(this).hide();
+
     // Realizar una solicitud AJAX para obtener el contenido de la carpeta
     $.ajax({
         url: ajax_object.ajax_url,
@@ -93,24 +96,30 @@ $(document).on('click', '#load-more', function() {
         },
         success: function(response) {
             if (response.success) {
-                // Agregar nuevos elementos al contenedor
-                $('#folder-content').append(response.data);
-                
+                const newContent = $(response.data).find('.file-container').length > 0
+                    ? $(response.data).find('.file-container').html()
+                    : response.data;
+
+                $('.file-container').append(newContent);
+
                 // Verificar si aún hay más elementos para mostrar
-                if (response.more_content_available) {
-                    $('#load-more').show(); // Mostrar el botón "Ver más contenido"
+                if ($('#load-more', response.data).length > 0) {
+                    $('#load-more').show(); // Mostrar el botón "Ver más contenido" si hay más elementos
                 } else {
-                    $('#load-more').hide(); // Ocultar el botón si no hay más elementos
+                    $('#load-more').remove(); // Eliminar el botón si no hay más elementos
                 }
             } else {
                 console.error(response.data);
+                $('#load-more').show(); // Mostrar el botón si hubo un error
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+            $('#load-more').show(); // Mostrar el botón si hubo un error
         }
     });
 });
+
 
 
 
