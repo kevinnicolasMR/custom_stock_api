@@ -43,7 +43,7 @@ function get_folder_content() {
                 $fonts[] = $file;
             }
         }
-
+ 
         // Obtener los parámetros de paginación
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
         $limit = 10; // Límite de elementos a mostrar
@@ -58,9 +58,9 @@ function get_folder_content() {
             $output .= '</div>';
         }
 
-        // Contador total de archivos
-        $totalFiles = count($folders) + count($videos) + count($images) + count($audios) + count($pdfs) + count($fonts);
-        $moreContentAvailable = $totalFiles > ($offset + $limit); // Verifica si hay más archivos que mostrar
+        // Actualizar el código PHP para verificar si hay más archivos disponibles
+$totalFilesQueried = $driveService->files->listFiles(array('q' => $query, 'pageSize' => ($offset + $limit + 1), 'fields' => 'files(id)'));
+$moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
 
         // Contador para los elementos mostrados
         $fileCount = 0;
@@ -134,8 +134,6 @@ function get_folder_content() {
         wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
-
-
 
 
 

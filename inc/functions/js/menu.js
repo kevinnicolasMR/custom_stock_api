@@ -79,10 +79,11 @@ jQuery(document).ready(function($) {
 $(document).on('click', '#load-more', function() {
     const folderId = $(this).data('folder-id'); // Obtener el ID de la carpeta actual
     const currentItems = $('.file-container > div').length; // Contar los elementos actuales mostrados
-    const limit = 5; // Límite de elementos a cargar cada vez
+    const limit = 10; // Límite de elementos a cargar cada vez (asegúrate de que coincida con el lado del servidor)
+    const loadMoreButton = $(this);
 
-    // Ocultar el botón mientras se carga
-    $(this).hide();
+    // Deshabilitar temporalmente el botón para evitar múltiples clics mientras se carga
+    loadMoreButton.prop('disabled', true);
 
     // Realizar una solicitud AJAX para obtener el contenido de la carpeta
     $.ajax({
@@ -104,21 +105,23 @@ $(document).on('click', '#load-more', function() {
 
                 // Verificar si aún hay más elementos para mostrar
                 if ($('#load-more', response.data).length > 0) {
-                    $('#load-more').show(); // Mostrar el botón "Ver más contenido" si hay más elementos
+                    loadMoreButton.show().prop('disabled', false); // Mostrar y habilitar el botón si hay más elementos
                 } else {
-                    $('#load-more').remove(); // Eliminar el botón si no hay más elementos
+                    loadMoreButton.remove(); // Eliminar el botón si no hay más elementos
                 }
             } else {
                 console.error(response.data);
-                $('#load-more').show(); // Mostrar el botón si hubo un error
+                loadMoreButton.show().prop('disabled', false); // Mostrar y habilitar el botón si hubo un error
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-            $('#load-more').show(); // Mostrar el botón si hubo un error
+            loadMoreButton.show().prop('disabled', false); // Mostrar y habilitar el botón si hubo un error
         }
     });
 });
+
+    
 
 
 
