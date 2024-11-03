@@ -74,8 +74,8 @@ jQuery(document).ready(function($) {
     // Iniciar el manejo de eventos
     handleFolderClick();
 
-    
-    // Función para manejar el clic en el botón "Ver más contenido"
+
+// Función para manejar el clic en el botón "Ver más contenido"
 $(document).on('click', '#load-more', function() {
     const folderId = $(this).data('folder-id'); // Obtener el ID de la carpeta actual
     const currentItems = $('.file-container > div').length; // Contar los elementos actuales mostrados
@@ -111,20 +111,6 @@ $(document).on('click', '#load-more', function() {
         }
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -8,7 +8,6 @@ require_once plugin_dir_path(__FILE__) . 'templates/pdf-template.php';
 require_once plugin_dir_path(__FILE__) . 'templates/fonts-template.php';
 
 
-// Función para manejar la solicitud AJAX
 function get_folder_content() {
     $parentFolderId = '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM';
     $folderId = isset($_POST['folder_id']) ? sanitize_text_field($_POST['folder_id']) : $parentFolderId;
@@ -48,11 +47,16 @@ function get_folder_content() {
         // Obtener los parámetros de paginación
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
         $limit = 5; // Límite de elementos a mostrar
-        $output = '<div class="search-container">';
-        $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
-        $output .= '<button id="search-button">Buscar</button>';
-        $output .= '<button id="clear-button" style="display: none;">X</button>';
-        $output .= '</div>';
+        $output = '';
+
+        // Generar el search-container solo en la primera carga
+        if ($offset === 0) {
+            $output .= '<div class="search-container">';
+            $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
+            $output .= '<button id="search-button">Buscar</button>';
+            $output .= '<button id="clear-button" style="display: none;">X</button>';
+            $output .= '</div>';
+        }
 
         $output .= '<div class="file-container">';
 
@@ -128,6 +132,7 @@ function get_folder_content() {
 
 
 
+ 
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
