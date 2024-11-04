@@ -3,27 +3,43 @@ function render_audio_template($file, $categoryName) {
     $audioUrl = 'https://drive.google.com/file/d/' . esc_attr($file->id) . '/preview';
     $downloadUrl = 'https://drive.google.com/uc?export=download&id=' . esc_attr($file->id);
     ob_start();
+
+    // Truncar el título del audio si tiene más de 26 caracteres
+    $audioTitle = esc_html($file->name);
+    if (mb_strlen($audioTitle) > 26) {
+        $audioTitle = mb_substr($audioTitle, 0, 26) . '...';
+    }
+
+    // Obtener la fecha de creación y formatearla
+    $creationDate = new DateTime($file->created_time);
+    $formattedDate = $creationDate->format('d-m-Y'); // Cambia el formato según tus necesidades
+
     ?>
     <div class="file-item file-item-audio filter-prop-element" alt="<?php echo esc_attr($file->name); ?>">
         <div class="audio-info-container">
             <div class="audio-container" data-audio-url="<?php echo esc_url($audioUrl); ?>">
                 <div class="button-load-start">
-                    <button class="load-audio"><i class="fas fa-download"></i></button>
+                    <button class="load-audio"><i class="fas fa-play"></i></button>
                 </div>
                 <div class="audio-title-container">
-                <p class="audio-category"><?php echo esc_html($categoryName); ?></p>                     
-                    <p class="audio-title"><?php echo esc_html($file->name); ?></p>
+                    <p class="audio-category"><?php echo esc_html($categoryName); ?></p>                     
+                    <p class="audio-title"><?php echo $audioTitle; ?></p> <!-- Usar el título truncado -->
                 </div>
             </div>        
         </div>
-
+        <div class="img-example-audio-google-drive"> 
+            <img src="<?php echo plugins_url('img/preview-img.png', __FILE__); ?>" alt="Audio Example" class="img-example-audio">
+        </div>
         <div class="img-preview-audio-google-drive"> 
             <img src="<?php echo plugins_url('img/preview-audio.png', __FILE__); ?>" alt="Audio Preview" class="img-preview-audio">
             <div class="audio-content"></div> 
         </div>
 
         <div class="audio-download">
-            <a href="<?php echo esc_url($downloadUrl); ?>" class="download-audio-button" target="_blank" download>Descargar</a>
+        <p class="audio-creation-date"><?php echo esc_html($formattedDate); ?></p> 
+            <a href="<?php echo esc_url($downloadUrl); ?>" class="download-audio-button" target="_blank" download>
+                <i class="fas fa-download"></i> <!-- Ícono de descarga -->
+            </a>
         </div>
     </div>
     <?php
