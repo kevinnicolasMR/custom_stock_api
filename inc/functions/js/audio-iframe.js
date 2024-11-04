@@ -6,10 +6,17 @@ jQuery(document).ready(function($) {
         
         var button = $(this);
         
-        button.html('<i class="fas fa-spinner fa-spin"></i>'); 
+        // Desactivar el botón para evitar múltiples clics
+        button.prop('disabled', true);
+
+        // Cambiar el ícono y el texto al iniciar la carga
+        button.html('<i class="fas fa-spinner fa-spin"></i><p>Cargando...</p>'); 
 
         setTimeout(function() {
-            button.html('<i class="fas fa-play"></i>'); 
+            // Cambiar el ícono y el texto al finalizar la carga
+            button.html('<i class="fas fa-play"></i><p>Audio activado</p>'); 
+            // Si quieres habilitar el botón de nuevo, descomenta la siguiente línea
+            // button.prop('disabled', false);
         }, 5000);
 
         var container = button.closest('.file-item'); 
@@ -20,5 +27,4 @@ jQuery(document).ready(function($) {
             audioContent.html('<iframe src="' + audioUrl + '" display="flex" width="100%" height="100%" frameborder="0" allow="autoplay"></iframe>');
         }
     });
-
 });

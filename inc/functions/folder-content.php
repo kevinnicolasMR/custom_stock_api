@@ -15,6 +15,10 @@ function get_folder_content() {
     $driveService = connect_to_google_drive();
 
     try {
+        // Obtener el nombre de la carpeta (puedes ajustar esto según cómo obtienes los detalles de la carpeta)
+        $folder = $driveService->files->get($folderId, ['fields' => 'name']);
+        $folderName = $folder->name; // Obtiene el nombre de la carpeta
+
         $query = sprintf("'%s' in parents", $folderId);
         $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
@@ -43,7 +47,7 @@ function get_folder_content() {
                 $fonts[] = $file;
             }
         }
- 
+
         // Obtener los parámetros de paginación
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
         $limit = 10; // Límite de elementos a mostrar
@@ -59,12 +63,12 @@ function get_folder_content() {
         }
 
         // Actualizar el código PHP para verificar si hay más archivos disponibles
-$totalFilesQueried = $driveService->files->listFiles(array('q' => $query, 'pageSize' => ($offset + $limit + 1), 'fields' => 'files(id)'));
-$moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
+        $totalFilesQueried = $driveService->files->listFiles(array('q' => $query, 'pageSize' => ($offset + $limit + 1), 'fields' => 'files(id)'));
+        $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
 
         // Contador para los elementos mostrados
         $fileCount = 0;
- 
+
         // Generar el contenido a cargar
         $fileContent = ''; 
 
@@ -95,7 +99,7 @@ $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
         // Renderizar audios
         foreach ($audios as $audio) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $fileContent .= render_audio_template($audio);
+                $fileContent .= render_audio_template($audio, $folderName); // Pasar el nombre de la carpeta
             }
             $fileCount++;
         }
@@ -123,21 +127,17 @@ $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
             $output = $fileContent;
         }
 
-if ($moreContentAvailable) {
-    $output .= '<div class="button-load-more-container">';
-    $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
-    $output .= '</div>';
-}
-
-
+        if ($moreContentAvailable) {
+            $output .= '<div class="button-load-more-container">';
+            $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
+            $output .= '</div>';
+        }
 
         wp_send_json_success($output);
     } catch (Exception $e) {
         wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
-
-
 
 // Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');

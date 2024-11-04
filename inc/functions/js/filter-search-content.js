@@ -1,6 +1,5 @@
 // Filtrador de file-items mediante un input search, aca controlamos los tildes, mayusculas, etc.
 
-
 jQuery(document).ready(function ($) {
 
     $(document).on('click', '#search-button', function () {
