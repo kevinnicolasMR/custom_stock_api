@@ -120,14 +120,16 @@ $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
         if ($offset === 0) {
             $output .= '<div class="file-container">' . $fileContent . '</div>';
         } else {
-            // En cargas posteriores, solo se envía el contenido sin el contenedor principal
             $output = $fileContent;
         }
 
-        // Agregar botón "Ver más contenido" si hay más archivos
-        if ($moreContentAvailable) {
-            $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
-        }
+if ($moreContentAvailable) {
+    $output .= '<div class="button-load-more-container">';
+    $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
+    $output .= '</div>';
+}
+
+
 
         wp_send_json_success($output);
     } catch (Exception $e) {
