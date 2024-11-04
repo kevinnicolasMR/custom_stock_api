@@ -1,0 +1,140 @@
+Documentación del Plugin de Almacenamiento en Google Drive para WordPress
+Este plugin permite integrar una selección de carpetas y archivos de Google Drive en WordPress, proporcionando un sistema organizado de visualización y acceso a los archivos mediante shortcodes y menús personalizados en el panel de administración. El plugin se organiza en varios archivos principales que realizan tareas específicas, descritos a continuación:
+
+Archivos principales y sus funciones
+1. general-plugin-creator.php
+Este archivo es el núcleo del plugin y contiene las siguientes funcionalidades clave:
+-Importación de archivos de funciones y conexión: Carga otros archivos importantes del plugin (conexión con la API, manejo de eventos de clic y funciones de búsqueda).
+-Función generate_shortcode($folderIds): Genera un shortcode basado en los IDs de las carpetas proporcionadas, permitiendo insertar fácilmente el contenido en cualquier página o entrada de WordPress.
+-Función enqueue_custom_assets(): Agrega los scripts y estilos personalizados del plugin, incluyendo jQuery y Font Awesome. También localiza el script de AJAX, proporcionando la URL para solicitudes a admin-ajax.php.
+-Shortcode [drive_folders]: Define un shortcode que se asocia a la función display_drive_folders_menu para cargar el menú de carpetas y subcarpetas desde Google Drive.
+
+
+
+2. folder-search.php
+Contiene funciones para gestionar la visualización y búsqueda de subcarpetas en Google Drive:
+-Constante PARENT_FOLDER_ID: Define el ID de la carpeta raíz para la navegación.
+-Función render_subfolders($driveService, $folderId, $level = 0): Genera un árbol de carpetas recursivo que permite ver hasta dos niveles de subcarpetas en la interfaz de usuario.
+-Función display_drive_folders_menu($atts): Muestra el menú de carpetas y subcarpetas en Google Drive, cargando el contenido de la carpeta seleccionada mediante AJAX en el área #folder-content.
+
+
+
+3. folder-content.php
+Define cómo obtener y mostrar el contenido dentro de una carpeta específica:
+-Función get_folder_content(): Llama a la API de Google Drive para listar los archivos en una carpeta y clasificar por tipo (imágenes, videos, audios, PDFs, fuentes). Permite la carga paginada con un botón "Ver más contenido" si hay más archivos disponibles.
+-Estructura del contenido: Implementa una interfaz de búsqueda, con un botón de "Borrar" para restablecer el filtro, y carga dinámica del contenido usando AJAX.
+
+
+
+4. api-connection.php
+Gestiona la conexión con la API de Google Drive, utilizando un archivo de configuración JSON con las credenciales de acceso:
+-Dependencias de Composer: Verifica si autoload.php está disponible y detiene la ejecución si no se encuentran las dependencias necesarias.
+-Función connect_to_google_drive(): Inicializa el cliente de Google Drive en modo DRIVE_READONLY para permitir únicamente la lectura de archivos y carpetas.
+
+
+
+5. admin-page.php
+Crea una página de administración en el panel de WordPress donde se pueden seleccionar carpetas de Google Drive para generar shortcodes:
+-Función wp_drive_folders_admin_page(): Muestra una lista de carpetas en la interfaz de administración y permite al usuario seleccionar las carpetas para generar un shortcode específico.
+-Función wp_drive_folders_menu(): Agrega una entrada de menú llamada "Drive Folders" en el panel de WordPress, permitiendo a los administradores gestionar las carpetas que se desean mostrar en el frontend.
+
+
+
+Dependencias y configuraciones adicionales
+Autenticación: Se debe configurar un archivo JSON en la ruta config/segundo-test-438820-79896991963d.json, que contiene las credenciales para acceder a la API de Google Drive.
+AJAX y jQuery: El plugin usa AJAX para cargar el contenido de las carpetas sin refrescar la página, proporcionando una experiencia fluida para el usuario.
+
+
+
+
+JAVASCRIPT por archivos:
+
+audio-iframe.js
+Este código controla la generación de un iframe para la previsualización de archivos de audio y el cambio del icono de carga.
+
+Evento Click en el botón .load-audio:
+
+-Desactiva el botón para evitar múltiples clics.
+-Muestra un ícono de carga usando un icono de spinner.
+-Obtiene la URL de audio y el contenedor donde se añadirá el iframe.
+-Inserta un mensaje de "Cargando audio..." en el contenedor de audio.
+-Genera el iframe de audio en caso de que aún no esté creado en audioContent.
+-Simulación de carga (5 segundos):
+-Cambia el ícono del botón a un ícono de altavoz (fas fa-volume-up).
+-Añade una clase de opacidad a la imagen de ejemplo del audio (img-example-audio-google-drive-opacity) para indicar que se está reproduciendo.
+-Elimina el mensaje de carga y muestra un mensaje de "Audio descargado".
+
+
+
+
+button-load.js
+-Controla la funcionalidad del botón para cargar más archivos en la vista de carpetas y gestiona su visibilidad cuando se activa el filtro de búsqueda.
+-checkFilterStatus: función que controla si el botón de carga (button-load-more-container) se muestra o no dependiendo de la visibilidad del botón de limpiar (#clear-button).
+
+Eventos:
+
+-Click en el botón de búsqueda (#search-button) o limpiar (#clear-button) actualiza la visibilidad del botón de carga.
+-Click en #load-more para cargar más archivos:
+-Hace una solicitud AJAX enviando el folderId, la cantidad actual de elementos, y el límite de archivos a cargar.
+-Al obtener respuesta exitosa, agrega los nuevos archivos en file-container y genera un nuevo contenedor button-load-more-container si hay más archivos por cargar.
+
+
+
+clickable-folders.js
+-Permite la navegación entre carpetas al hacer clic en elementos de carpeta.
+
+Evento Click en .clickable-folder:
+
+-Muestra un mensaje de "Cargando" y hace una solicitud AJAX para obtener el contenido de la carpeta seleccionada (folderId).
+-En caso de éxito, actualiza #folder-content con el contenido de la carpeta.
+-Oculta el mensaje de carga al completar la solicitud.
+
+
+
+filter-search-content.js
+-Filtra los elementos de file-item con un cuadro de búsqueda, soportando acentos y mayúsculas.
+
+Eventos:
+
+-Click en el botón de búsqueda: normaliza el texto de búsqueda y llama a filterItems para aplicar el filtro.
+-Enter en el input de búsqueda: filtra los elementos al presionar Enter.
+-Click en #clear-button: limpia el filtro, muestra todos los elementos y oculta el botón de limpiar.
+
+Funciones:
+-normalizeString: elimina tildes para facilitar la comparación.
+-filterItems: recorre los elementos filter-prop-element, comparando el texto normalizado con el término de búsqueda. Muestra u oculta los elementos según si coinciden, y muestra el botón de -limpiar si se encuentra alguna coincidencia. Si no se encuentra ningún archivo, muestra una alerta.
+
+
+
+menu.js
+-Controla la funcionalidad del menú lateral y la visibilidad de subcarpetas al hacer clic en ellas.
+
+-handleFolderClick: gestiona el clic en .subfolder.
+
+-Al hacer clic en una subcarpeta, muestra un mensaje de carga, realiza una solicitud AJAX para obtener el contenido de la carpeta, y oculta el mensaje una vez que se completa la solicitud.
+-Llama a toggleSubfolders para mostrar u ocultar subcarpetas anidadas.
+-toggleSubfolders: cambia la visibilidad de las subcarpetas dentro de la carpeta actual.
+-Cambia entre clases visibleContentMenu y hideContentMenu para alternar su visibilidad.
+-toggleVisibility: alterna la visibilidad de un elemento específico, usado para manejar subcarpetas.
+
+
+
+popup-preview.js
+-Muestra un popup de previsualización cuando se hace clic en imágenes o videos.
+
+Click en .image-item:
+-Obtiene la URL de la imagen y genera un overlay con la imagen en alta resolución.
+-Añade un botón de descarga y un botón de cierre.
+-Click en .video-item:
+
+Similar al evento de imagen, genera un overlay con un iframe para la previsualización de videos.
+Extrae el fileId de la URL del video para generar un botón de descarga.
+Funciones auxiliares:
+
+createDownloadUrl: genera la URL de descarga a partir del fileId.
+createOverlay: crea el contenedor oscuro del popup.
+createDownloadButton: genera el botón de descarga en el popup.
+createCloseButton: crea el botón de cierre para eliminar el overlay.
+
+
+

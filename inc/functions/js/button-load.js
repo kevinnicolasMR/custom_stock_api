@@ -1,23 +1,19 @@
 // Boton que usamos para pedirle a Google Drive que genere mas file-items
 jQuery(document).ready(function($) {
-    // Función para verificar si el filtro está activado y ocultar el botón de cargar más
     function checkFilterStatus() {
         if ($('#clear-button').is(':visible')) {
-            $('.button-load-more-container').hide(); // Ocultar el contenedor del botón de cargar más
+            $('.button-load-more-container').hide(); 
         } else {
-            $('.button-load-more-container').show(); // Mostrar el contenedor del botón de cargar más
+            $('.button-load-more-container').show(); 
         }
     }
 
-    // Llamada inicial para verificar el estado del filtro al cargar la página
     checkFilterStatus();
 
-    // Evento para verificar el estado cuando se hace clic en el botón de búsqueda
     $(document).on('click', '#search-button', function() {
         checkFilterStatus();
     });
 
-    // Evento para verificar el estado cuando se hace clic en el botón de limpiar
     $(document).on('click', '#clear-button', function() {
         checkFilterStatus();
     });
@@ -45,18 +41,14 @@ jQuery(document).ready(function($) {
                         ? $(response.data).find('.file-container').html()
                         : response.data;
 
-                    // Append new content to the file container
                     $('.file-container').append(newContent);
 
-                    // Remove old load-more button if it exists
                     $('.button-load-more-container').remove();
 
-                    // Append the new load-more button if there's more content
                     if ($('#load-more', response.data).length > 0) {
                         $('.file-container').after('<div class="button-load-more-container">' + $('#load-more', response.data).parent().html() + '</div>');
                     }
 
-                    // Verificar el estado del filtro después de cargar más contenido
                     checkFilterStatus();
                 } else {
                     console.error(response.data);

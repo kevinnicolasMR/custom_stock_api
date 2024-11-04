@@ -6,10 +6,8 @@ jQuery(document).ready(function($) {
         
         var button = $(this);
         
-        // Desactivar el botón para evitar múltiples clics
         button.prop('disabled', true);
 
-        // Cambiar el ícono y el texto al iniciar la carga
         button.html('<i class="fas fa-spinner fa-spin"></i>'); 
 
         var container = button.closest('.file-item'); 
@@ -17,15 +15,13 @@ jQuery(document).ready(function($) {
         var audioContent = container.find('.img-preview-audio-google-drive .audio-content'); 
         var audioContainer = container.find('.audio-container');
 
-        // Mostrar el primer mensaje durante la carga
-        audioContainer.append('<div class="loading-message">Cargando audio</div>');
+        audioContainer.append('<div class="loading-message">Cargando audio...</div>');
 
         if (audioContent.is(':empty')) {
             audioContent.html('<iframe src="' + audioUrl + '" display="flex" width="100%" height="100%" frameborder="0" allow="autoplay"></iframe>');
         }
 
         setTimeout(function() {
-            // Restaurar el ícono del botón
             button.html('<i class="fas fa-volume-up"></i>');
             container.find('.img-example-audio-google-drive').addClass('img-example-audio-google-drive-opacity');
             

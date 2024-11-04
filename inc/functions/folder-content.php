@@ -15,14 +15,12 @@ function get_folder_content() {
     $driveService = connect_to_google_drive();
 
     try {
-        // Obtener el nombre de la carpeta (puedes ajustar esto según cómo obtienes los detalles de la carpeta)
         $folder = $driveService->files->get($folderId, ['fields' => 'name']);
-        $folderName = $folder->name; // Obtiene el nombre de la carpeta
+        $folderName = $folder->name; 
 
         $query = sprintf("'%s' in parents", $folderId);
         $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
 
-        // Inicializa los arrays para clasificar los archivos
         $folders = [];
         $videos = [];
         $images = [];
@@ -48,12 +46,10 @@ function get_folder_content() {
             }
         }
 
-        // Obtener los parámetros de paginación
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
-        $limit = 10; // Límite de elementos a mostrar
+        $limit = 10; 
         $output = '';
 
-        // Solo en la primera carga, generamos el contenedor de búsqueda
         if ($offset === 0) {
             $output .= '<div class="search-container">';
             $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
@@ -62,17 +58,13 @@ function get_folder_content() {
             $output .= '</div>';
         }
 
-        // Actualizar el código PHP para verificar si hay más archivos disponibles
         $totalFilesQueried = $driveService->files->listFiles(array('q' => $query, 'pageSize' => ($offset + $limit + 1), 'fields' => 'files(id)'));
         $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
 
-        // Contador para los elementos mostrados
         $fileCount = 0;
 
-        // Generar el contenido a cargar
         $fileContent = ''; 
 
-        // Renderizar carpetas
         foreach ($folders as $folder) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_folder_template($folder);
@@ -80,7 +72,6 @@ function get_folder_content() {
             $fileCount++;
         }
 
-        // Renderizar videos
         foreach ($videos as $video) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_video_template($video);
@@ -88,7 +79,6 @@ function get_folder_content() {
             $fileCount++;
         }
 
-        // Renderizar imágenes
         foreach ($images as $image) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_image_template($image);
@@ -96,15 +86,13 @@ function get_folder_content() {
             $fileCount++;
         }
 
-        // Renderizar audios
         foreach ($audios as $audio) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $fileContent .= render_audio_template($audio, $folderName); // Pasar el nombre de la carpeta
+                $fileContent .= render_audio_template($audio, $folderName); 
             }
             $fileCount++;
         }
 
-        // Renderizar PDFs
         foreach ($pdfs as $pdf) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_pdf_template($pdf);
@@ -112,7 +100,6 @@ function get_folder_content() {
             $fileCount++;
         }
 
-        // Renderizar fuentes
         foreach ($fonts as $font) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_font_template($font);
@@ -120,7 +107,6 @@ function get_folder_content() {
             $fileCount++;
         }
 
-        // Agregar el contenido generado al contenedor principal si es la primera carga
         if ($offset === 0) {
             $output .= '<div class="file-container">' . $fileContent . '</div>';
         } else {
@@ -139,6 +125,5 @@ function get_folder_content() {
     }
 }
 
-// Agrega la acción AJAX para usuarios registrados y no registrados
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
