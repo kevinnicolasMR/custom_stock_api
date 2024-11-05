@@ -3,25 +3,6 @@ require_once plugin_dir_path(__FILE__) . '../api-connection.php';
 
 define('PARENT_FOLDER_ID', '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM');
 
-function render_subfolders($driveService, $folderId, $level = 0) {
-    $output = ''; 
-    try {
-        $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
-        $subFolders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
-        foreach ($subFolders->files as $subFolder) {
-            $output .= '<div class="subfolder level-' . esc_attr($level) . ' hideContentMenu" data-folder-id="' . esc_attr($subFolder->id) . '">';
-            $output .= '<p>' . esc_html($subFolder->name) . '</p>';
-            if ($level < 2) {
-                $output .= render_subfolders($driveService, $subFolder->id, $level + 1); 
-            }
-            $output .= '</div>'; // Cierra el div de la subcarpeta
-        }
-    } catch (Exception $e) {
-        $output .= '<p>Error al obtener subcarpetas: ' . esc_html($e->getMessage()) . '</p>';
-    }
-    return $output; 
-}
-
 function display_drive_folders_menu($atts) {
     // Atributos del shortcode
     $atts = shortcode_atts(array('ids' => ''), $atts, 'drive_folders');
@@ -51,41 +32,74 @@ function display_drive_folders_menu($atts) {
     $output .= '<div id="folder-content"><div id="loading-message" style="text-align: center; display: none;">Cargando contenido de Google Drive...</div></div>';
     $output .= '</div>'; // Cierra drive-folders-container
 
-    // Script para cargar el contenido de la carpeta en segundo plano después de la carga completa de la página
+    // Agregar script JS para el manejo de AJAX
     $output .= '
     <script>
         window.addEventListener("load", function() {
             setTimeout(function() {
-                loadDriveFolders();
+                loadDriveFoldersMenu(); // Cargar nombres del menú en segundo plano
+                loadDriveFolders();     // Cargar el contenido de la carpeta padre
             }, 500); // Espera medio segundo después de cargar la página
         });
 
+        function loadDriveFoldersMenu() {
+            jQuery(document).ready(function ($) {
+                $(".clickable-folder").each(function() {
+                    var folderId = $(this).data("folder-id");
+                    if (!folderId) return;
+
+                    var folderElement = $(this);
+
+                    $.ajax({
+                        url: ajax_object.ajax_url,
+                        method: "POST",
+                        data: {
+                            action: "get_folder_name",
+                            folder_id: folderId
+                        },
+                        success: function(response) {
+                            console.log(response); // Agrega esto
+                            if (response.success) {
+                                folderElement.html("<p>" + response.data.name + "</p>");
+                            } else {
+                                folderElement.html("<p>Error al cargar carpeta</p>");
+                                console.error("Error en la respuesta del servidor:", response.data);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            folderElement.html("<p>Error de conexión</p>");
+                            console.error("Error en AJAX:", textStatus, errorThrown, jqXHR.responseText);
+                        }
+                    });
+                });
+            });
+        }
+
         function loadDriveFolders() {
             jQuery(document).ready(function ($) {
-                $("#loading-message").show(); // Muestra el mensaje de carga
+                $("#loading-message").show();
                 $.ajax({
                     url: ajax_object.ajax_url,
                     method: "POST",
                     data: {
-                        action: "get_folder_content", // Llama a la acción AJAX que ya tienes
+                        action: "get_folder_content",
                         folder_id: "' . esc_js(PARENT_FOLDER_ID) . '"
                     },
-                    success: function (response) {
-                        $("#loading-message").hide(); // Oculta el mensaje de carga
+                    success: function(response) {
+                        $("#loading-message").hide();
                         if (response.success) {
-                            $("#folder-content").html(response.data); // Rellena el contenedor con el contenido
+                            $("#folder-content").html(response.data);
                         } else {
                             $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                         }
                     },
-                    error: function () {
+                    error: function() {
                         $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
                     }
                 });
             });
         }
 
-        // Manejador de clics en carpetas
         jQuery(document).on("click", ".clickable-folder", function () {
             var folderId = jQuery(this).data("folder-id");
             loadFolderContent(folderId);
@@ -100,18 +114,18 @@ function display_drive_folders_menu($atts) {
                     folder_id: folderId
                 },
                 beforeSend: function() {
-                    $("#loading-message").show(); // Mostrar mensaje de carga
-                    $("#folder-content").html(""); // Limpiar contenido anterior
+                    $("#loading-message").show();
+                    $("#folder-content").html("");
                 },
-                success: function (response) {
-                    $("#loading-message").hide(); // Ocultar mensaje de carga
+                success: function(response) {
+                    $("#loading-message").hide();
                     if (response.success) {
-                        $("#folder-content").html(response.data); // Rellenar con el contenido recibido
+                        $("#folder-content").html(response.data);
                     } else {
                         $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                     }
                 },
-                error: function () {
+                error: function() {
                     $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
                 }
             });
@@ -120,4 +134,3 @@ function display_drive_folders_menu($atts) {
 
     return $output;
 }
-
