@@ -23,44 +23,76 @@ function render_subfolders($driveService, $folderId, $level = 0) {
 }
 
 function display_drive_folders_menu($atts) {
+    // Atributos del shortcode
     $atts = shortcode_atts(array('ids' => ''), $atts, 'drive_folders');
     if (empty($atts['ids'])) {
         return '<p>No se han proporcionado carpetas para mostrar.</p>';
     }
-    $driveService = connect_to_google_drive();
-    $folderIds = explode(',', $atts['ids']);
-    
-    $output = '<div id="drive-folders-container">';
-    
-    $output .= '<div id="folder-menu">';
-    
-    $output .= '<div class="level-0-wrapper">'; 
 
+    // Conexión con el servicio de Google Drive
+    $folderIds = explode(',', $atts['ids']);
+    $output = '<div id="drive-folders-container">';
+
+    // Contenedor para el menú de carpetas
+    $output .= '<div id="folder-menu">';
+    $output .= '<div class="level-0-wrapper">';
+
+    // Recorre cada carpeta ID proporcionado en los atributos
     foreach ($folderIds as $folderId) {
         $folderId = trim($folderId);
-        try {
-            $folder = $driveService->files->get($folderId, array('fields' => 'id, name'));
-            
-            $output .= '<div class="subfolder level-0 clickable-folder" data-folder-id="' . esc_attr($folderId) . '">';
-            $output .= '<p>' . esc_html($folder->name) . '</p>';  
-            $output .= render_subfolders($driveService, $folderId, 1);
-            $output .= '</div>';  
-        } catch (Exception $e) {
-            $output .= '<p>Error al obtener carpeta: ' . esc_html($e->getMessage()) . '</p>';
-        }
+        $output .= '<div class="subfolder level-0 clickable-folder" data-folder-id="' . esc_attr($folderId) . '">';
+        $output .= '<p>Cargando carpeta...</p>'; // Mensaje temporal antes de la carga
+        $output .= '</div>';  
     }
- 
-    $output .= '</div>'; 
+    $output .= '</div>'; // Cierra level-0-wrapper
+    $output .= '</div>'; // Cierra folder-menu
 
-    $output .= '</div><div id="folder-content"><div id="loading-message" style="display:none;">Cargando...</div></div></div>';
+    // Contenedor para el contenido de la carpeta
+    $output .= '<div id="folder-content"><div id="loading-message" style="text-align: center; display: none;">Cargando contenido de Google Drive...</div></div>';
+    $output .= '</div>'; // Cierra drive-folders-container
 
-$output .= '
-<script>
-    jQuery(document).ready(function ($) {
-        const parentFolderId = "' . PARENT_FOLDER_ID . '";
-        
+    // Script para cargar el contenido de la carpeta en segundo plano después de la carga completa de la página
+    $output .= '
+    <script>
+        window.addEventListener("load", function() {
+            setTimeout(function() {
+                loadDriveFolders();
+            }, 500); // Espera medio segundo después de cargar la página
+        });
+
+        function loadDriveFolders() {
+            jQuery(document).ready(function ($) {
+                $("#loading-message").show(); // Muestra el mensaje de carga
+                $.ajax({
+                    url: ajax_object.ajax_url,
+                    method: "POST",
+                    data: {
+                        action: "get_folder_content", // Llama a la acción AJAX que ya tienes
+                        folder_id: "' . esc_js(PARENT_FOLDER_ID) . '"
+                    },
+                    success: function (response) {
+                        $("#loading-message").hide(); // Oculta el mensaje de carga
+                        if (response.success) {
+                            $("#folder-content").html(response.data); // Rellena el contenedor con el contenido
+                        } else {
+                            $("#folder-content").html("<p>Error al cargar el contenido.</p>");
+                        }
+                    },
+                    error: function () {
+                        $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
+                    }
+                });
+            });
+        }
+
+        // Manejador de clics en carpetas
+        jQuery(document).on("click", ".clickable-folder", function () {
+            var folderId = jQuery(this).data("folder-id");
+            loadFolderContent(folderId);
+        });
+
         function loadFolderContent(folderId) {
-            $.ajax({
+            jQuery.ajax({
                 url: ajax_object.ajax_url,
                 method: "POST",
                 data: {
@@ -68,13 +100,13 @@ $output .= '
                     folder_id: folderId
                 },
                 beforeSend: function() {
-                    $("#loading-message").show();
-                    $("#folder-content").html("");
+                    $("#loading-message").show(); // Mostrar mensaje de carga
+                    $("#folder-content").html(""); // Limpiar contenido anterior
                 },
                 success: function (response) {
-                    $("#loading-message").hide();
+                    $("#loading-message").hide(); // Ocultar mensaje de carga
                     if (response.success) {
-                        $("#folder-content").html(response.data);
+                        $("#folder-content").html(response.data); // Rellenar con el contenido recibido
                     } else {
                         $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                     }
@@ -84,20 +116,8 @@ $output .= '
                 }
             });
         }
-
-        // Cargar automáticamente la carpeta madre al inicio, pero en segundo plano
-        window.onload = function() {
-            loadFolderContent(parentFolderId);
-        };
-
-        // Cargar carpetas al hacer clic en el menú de la izquierda
-        $(document).on("click", ".clickable-folder", function () {
-            const folderId = $(this).data("folder-id");
-            loadFolderContent(folderId);
-        });
-    });
-</script>
-';
+    </script>';
 
     return $output;
 }
+

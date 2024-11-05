@@ -15,7 +15,7 @@ function generate_shortcode($folderIds) {
 function enqueue_custom_assets() {
     wp_enqueue_script('jquery'); 
 
-    // Cargar tus scripts personalizados
+    // Scripts del plugin cargados al final para no afectar carga inicial de la página
     wp_enqueue_script('custom-script', plugin_dir_url(__FILE__) . 'functions/js/menu.js', array('jquery'), null, true);
     wp_enqueue_script('audio-iframe-script', plugin_dir_url(__FILE__) . 'functions/js/audio-iframe.js', array('jquery'), null, true);
     wp_enqueue_script('image-popup-script', plugin_dir_url(__FILE__) . 'functions/js/popup-preview.js', array('jquery'), null, true);
@@ -23,17 +23,15 @@ function enqueue_custom_assets() {
     wp_enqueue_script('filter-search-content', plugin_dir_url(__FILE__) . 'functions/js/filter-search-content.js', array('jquery'), null, true);
     wp_enqueue_script('button-load-scripts', plugin_dir_url(__FILE__) . 'functions/js/button-load.js', array('jquery'), null, true);
 
-    // Cargar tus estilos personalizados
+    // Estilos cargados como de costumbre
     wp_enqueue_style('custom-style', plugin_dir_url(__FILE__) . 'custom_css/menu.css');
-
-    // Cargar Font Awesome desde su CDN
     wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', array(), null);
 
-    // Localiza el script y pasa la URL de admin-ajax.php a JavaScript
     wp_localize_script('custom-script', 'ajax_object', array(
         'ajax_url' => admin_url('admin-ajax.php')
     ));
 }
+
 add_action('wp_enqueue_scripts', 'enqueue_custom_assets');
 
 add_shortcode('drive_folders', 'display_drive_folders_menu');
