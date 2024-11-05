@@ -32,27 +32,6 @@ function enqueue_custom_assets() {
     ));
 }
 
-add_action('wp_ajax_get_folder_name', 'get_folder_name');
-add_action('wp_ajax_nopriv_get_folder_name', 'get_folder_name');
-
-// Función para obtener el nombre de la carpeta desde Google Drive
-function get_folder_name() {
-    if (!isset($_POST['folder_id'])) {
-        wp_send_json_error('No folder ID provided');
-        return;
-    }
-
-    $folder_id = sanitize_text_field($_POST['folder_id']);
-    
-    // Lógica para obtener el nombre de la carpeta
-    $driveService = connect_to_google_drive(); // Asegúrate de que esta función esté bien definida
-    try {
-        $folder = $driveService->files->get($folder_id, array('fields' => 'id, name'));
-        wp_send_json_success(array('name' => $folder->name));
-    } catch (Exception $e) {
-        wp_send_json_error($e->getMessage());
-    }
-}
 
 add_action('wp_enqueue_scripts', 'enqueue_custom_assets');
 
