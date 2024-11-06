@@ -7,11 +7,6 @@ require_once plugin_dir_path(__FILE__) . 'templates/audio-template.php';
 require_once plugin_dir_path(__FILE__) . 'templates/pdf-template.php';
 require_once plugin_dir_path(__FILE__) . 'templates/fonts-template.php';
 
-
-
-
-
-
 function get_folder_content() {
     $parentFolderId = '1VEnaLmB6_EYRKYj5552rXB7shcjesrgM';
     $folderId = isset($_POST['folder_id']) ? sanitize_text_field($_POST['folder_id']) : $parentFolderId;

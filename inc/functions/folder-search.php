@@ -9,7 +9,7 @@ function display_drive_folders_menu($atts) {
     if (empty($atts['ids'])) {
         return '<p>No se han proporcionado carpetas para mostrar.</p>';
     }
-
+ 
     // Output container for the Drive folders
     $output = '<div id="drive-folders-container">';
 
