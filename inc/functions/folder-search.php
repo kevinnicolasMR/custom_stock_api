@@ -9,7 +9,7 @@ function display_drive_folders_menu($atts) {
     if (empty($atts['ids'])) {
         return '<p>No se han proporcionado carpetas para mostrar.</p>';
     }
- 
+
     // Output container for the Drive folders
     $output = '<div id="drive-folders-container">';
 
@@ -25,19 +25,24 @@ function display_drive_folders_menu($atts) {
     <script>
         jQuery(document).ready(function ($) {
             const parentFolderId = "' . PARENT_FOLDER_ID . '";
-            
-            // Load folder menu in background
-            function loadDriveFolders() {
+
+            // Load folder menu for level-0 on page load
+            function loadDriveFolders(folderId, level) {
                 $.ajax({
                     url: ajax_object.ajax_url,
                     method: "POST",
                     data: {
                         action: "get_folder_menu",
-                        folder_id: parentFolderId
+                        folder_id: folderId,
+                        level: level
                     },
                     success: function (response) {
                         if (response.success) {
-                            $("#folder-menu").html(response.data);
+                            if (level === 0) {
+                                $("#folder-menu").html(response.data); // Load level-0 folders into the menu
+                            } else {
+                                $(`[data-folder-id="${folderId}"]`).append(response.data); // Append level-1 subfolders to the clicked folder
+                            }
                         } else {
                             $("#folder-menu").html("<p>Error al cargar el menú de carpetas.</p>");
                         }
@@ -47,7 +52,7 @@ function display_drive_folders_menu($atts) {
                     }
                 });
             }
-            
+
             // Load specific folder content on click
             function loadFolderContent(folderId) {
                 $.ajax({
@@ -75,13 +80,22 @@ function display_drive_folders_menu($atts) {
                 });
             }
 
-            // Load the folder menu on page load
-            loadDriveFolders();
+            // Load the folder menu for level-0 on page load
+            loadDriveFolders(parentFolderId, 0);
 
             // Load the content of the parent folder by default on page load
             loadFolderContent(parentFolderId);
 
-            // Handle click events on folder items
+            // Handle click events on level-0 folder items to dynamically load level-1 folders
+            $(document).on("click", ".clickable-folder.level-0", function () {
+                const folderId = $(this).data("folder-id");
+                // Check if level-1 folders are already loaded to avoid reloading
+                if ($(this).children(".level-1-wrapper").length === 0) {
+                    loadDriveFolders(folderId, 1); // Load level-1 folders for the clicked level-0 folder
+                }
+            });
+
+            // Handle click events on all folder items to load folder content
             $(document).on("click", ".clickable-folder", function () {
                 const folderId = $(this).data("folder-id");
                 loadFolderContent(folderId);
@@ -92,21 +106,22 @@ function display_drive_folders_menu($atts) {
     return $output;
 }
 
-
-
-
 function get_folder_menu() {
     $folderId = isset($_POST['folder_id']) ? sanitize_text_field($_POST['folder_id']) : PARENT_FOLDER_ID;
+    $level = isset($_POST['level']) ? intval($_POST['level']) : 0;
     $driveService = connect_to_google_drive();
 
     try {
-        $output = '<div class="level-0-wrapper">';
+        $output = ($level === 0) ? '<div class="level-0-wrapper">' : '<div class="level-1-wrapper">';
+        
+        // Query to fetch folders based on level and folder_id
         $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
         $folders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
 
         // Generate HTML for each folder
         foreach ($folders->files as $folder) {
-            $output .= '<div class="subfolder level-0 clickable-folder" data-folder-id="' . esc_attr($folder->id) . '">';
+            $folderLevelClass = ($level === 0) ? 'level-0' : 'level-1';
+            $output .= '<div class="subfolder ' . $folderLevelClass . ' clickable-folder" data-folder-id="' . esc_attr($folder->id) . '">';
             $output .= '<p>' . esc_html($folder->name) . '</p>';
             $output .= '</div>';
         }
@@ -120,3 +135,4 @@ function get_folder_menu() {
 }
 add_action('wp_ajax_get_folder_menu', 'get_folder_menu');
 add_action('wp_ajax_nopriv_get_folder_menu', 'get_folder_menu');
+?>
