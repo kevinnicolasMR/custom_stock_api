@@ -1,15 +1,17 @@
-// Funcionalidad del menu lateral izquierdo
+// Funcionalidad del menú lateral izquierdo
 
 jQuery(document).ready(function($) {
     function handleFolderClick() {
-        $('.subfolder').on('click', function(event) {
-            event.stopPropagation(); 
+        // Usamos delegación de eventos para manejar clics en carpetas generadas dinámicamente
+        $(document).on('click', '.subfolder.level-0', function(event) {
+            event.stopPropagation();
 
             const folderId = $(this).data('folder-id');
-            console.log('ID de carpeta seleccionada:', folderId); 
+            console.log('ID de carpeta seleccionada:', folderId);
 
             $('#loading-message').show();
 
+            // Cargar contenido de la carpeta seleccionada
             $.ajax({
                 url: ajax_object.ajax_url, 
                 type: 'POST',
@@ -31,23 +33,48 @@ jQuery(document).ready(function($) {
                     $('#loading-message').hide();
                 }
             });
-            toggleSubfolders(this);
+
+            // Cargar subcarpetas de level-1 si aún no están cargadas
+            if ($(this).children('.level-1-wrapper').length === 0) {
+                $.ajax({
+                    url: ajax_object.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'get_folder_menu',
+                        folder_id: folderId,
+                        level: 1
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Agregar las subcarpetas dentro del elemento clicado, ocultas inicialmente
+                            const newSubfolders = $(response.data).addClass('hideContentMenu');
+                            $(event.currentTarget).append(newSubfolders);
+                            toggleSubfolders(event.currentTarget); // Alternar visibilidad para mostrar las subcarpetas
+                        } else {
+                            console.error('Error al cargar las subcarpetas:', response.data);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error en la solicitud AJAX para subcarpetas:', textStatus, errorThrown);
+                    }
+                });
+            } else {
+                toggleSubfolders(this); // Alternar visibilidad si ya están cargadas
+            }
         });
     }
 
     function toggleSubfolders(folderElement) {
-        const currentLevel = $(folderElement).attr('class').match(/level-\d+/)[0]; 
-        
+        // Ocultar todas las subcarpetas visibles dentro de los hermanos de la carpeta actual
         $(folderElement).siblings('.subfolder').each(function() {
-            $(this).find('.subfolder').each(function() {
-                $(this).removeClass('visibleContentMenu').addClass('hideContentMenu');
-            });
+            $(this).find('.subfolder').removeClass('visibleContentMenu').addClass('hideContentMenu');
         });
 
-        const subfolders = $(folderElement).children('.subfolder');
+        // Alternar visibilidad de las subcarpetas de la carpeta actual
+        const subfolders = $(folderElement).children('.level-1-wrapper').children('.subfolder');
         if (subfolders.length) {
             subfolders.each(function() {
-                toggleVisibility(this); 
+                toggleVisibility(this);
             });
         }
     }
@@ -60,7 +87,6 @@ jQuery(document).ready(function($) {
         }
     }
 
+    // Inicializar manejo de clics en las carpetas
     handleFolderClick();
 });
-
-
