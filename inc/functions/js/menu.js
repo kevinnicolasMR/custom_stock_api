@@ -2,7 +2,7 @@
 
 jQuery(document).ready(function($) {
     function handleFolderClick() {
-        // Usamos delegación de eventos para manejar clics en carpetas generadas dinámicamente
+        // Usamos delegación de eventos para manejar clics en carpetas de level-0 generadas dinámicamente
         $(document).on('click', '.subfolder.level-0', function(event) {
             event.stopPropagation();
 
@@ -49,7 +49,7 @@ jQuery(document).ready(function($) {
                             // Agregar las subcarpetas dentro del elemento clicado, ocultas inicialmente
                             const newSubfolders = $(response.data).addClass('hideContentMenu');
                             $(event.currentTarget).append(newSubfolders);
-                            toggleSubfolders(event.currentTarget); // Alternar visibilidad para mostrar las subcarpetas
+                            toggleSubfolders(event.currentTarget); // Mostrar las subcarpetas recién cargadas
                         } else {
                             console.error('Error al cargar las subcarpetas:', response.data);
                         }
@@ -59,24 +59,19 @@ jQuery(document).ready(function($) {
                     }
                 });
             } else {
-                toggleSubfolders(this); // Alternar visibilidad si ya están cargadas
+                // Alternar visibilidad de las subcarpetas si ya están cargadas
+                toggleSubfolders(this);
             }
         });
     }
 
     function toggleSubfolders(folderElement) {
-        // Ocultar todas las subcarpetas visibles dentro de los hermanos de la carpeta actual
-        $(folderElement).siblings('.subfolder').each(function() {
-            $(this).find('.subfolder').removeClass('visibleContentMenu').addClass('hideContentMenu');
-        });
-
-        // Alternar visibilidad de las subcarpetas de la carpeta actual
         const subfolders = $(folderElement).children('.level-1-wrapper').children('.subfolder');
-        if (subfolders.length) {
-            subfolders.each(function() {
-                toggleVisibility(this);
-            });
-        }
+
+        // Alternar visibilidad de las subcarpetas específicas de la carpeta actual
+        subfolders.each(function() {
+            toggleVisibility(this);
+        });
     }
 
     function toggleVisibility(element) {
