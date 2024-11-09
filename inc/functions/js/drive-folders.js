@@ -25,56 +25,44 @@ jQuery(document).ready(function($) {
     }
 
     function loadDriveFolders(folderId, level) {
-        console.log(`Cargando carpetas para el folder ID: ${folderId}, nivel: ${level}`); // Log del ID de la carpeta
+        console.log(`Cargando carpetas para el folder ID: ${folderId}, nivel: ${level}`);
     
-        // Si es la carpeta madre, siempre cargamos de nuevo
-        if (folderId === currentParentFolderId) {
-            console.log(`Cargando la carpeta madre (ID: ${folderId}) nuevamente.`);
-        } else if (isFolderLoaded(folderId)) {
+        if (isFolderLoaded(folderId)) {
             console.log(`La carpeta ${folderId} ya está cargada. No se realiza la solicitud.`);
-            return; // Si no es la carpeta madre y ya está cargada, no hacemos nada
+            return;
         }
     
-        // Si no está cargada (o es la carpeta madre), proceder con la solicitud AJAX
         $.ajax({
             url: ajax_object.ajax_url,
-            method: "POST",
+            method: 'POST',
             data: {
-                action: "get_folder_menu",
+                action: 'get_folder_menu',
                 folder_id: folderId,
                 level: level
             },
             success: function(response) {
                 if (response.success) {
-                    console.log(`Respuesta exitosa para el folder ID: ${folderId}`);
                     if (level === 0) {
-                        $("#folder-menu").html(response.data); // Cargar carpetas de nivel-0 en el menú
+                        $('#folder-menu').html(response.data);
                     } else {
-                        $(`[data-folder-id="${folderId}"]`).append(response.data); // Agregar subcarpetas nivel-1
-                        $(`[data-folder-id="${folderId}"]`).addClass("loaded"); // Marcar como cargado
+                        $(`[data-folder-id="${folderId}"]`).append(response.data);
+                        $(`[data-folder-id="${folderId}"]`).addClass('loaded');
                     }
     
-                    // Después de cargar, marcamos la carpeta como cargada, excepto la madre
-                    if (folderId !== currentParentFolderId) {
-                        markFolderAsLoaded(folderId);
-                    }
-    
-                    // Cargar contenido después de que el menú haya sido cargado
-                    if (level === 0) {
-                        loadFolderContent(folderId); // Cargar contenido de la carpeta madre
-                    }
+                    markFolderAsLoaded(folderId);
                 } else {
-                    $("#folder-menu").html("<p>Error al cargar el menú de carpetas.</p>");
+                    $('#folder-menu').html('<p>Error al cargar el menú de carpetas.</p>');
                 }
             },
             error: function() {
-                $("#folder-menu").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
+                $('#folder-menu').html('<p>Error de conexión. Inténtalo de nuevo.</p>');
             },
             complete: function() {
-                $(`[data-folder-id="${folderId}"]`).data("isLoading", false); // Permitir clics nuevamente
+                $(`[data-folder-id="${folderId}"]`).data('isLoading', false);
             }
         });
     }
+    
     
     
 

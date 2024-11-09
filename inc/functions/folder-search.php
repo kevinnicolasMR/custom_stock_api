@@ -36,22 +36,27 @@ function get_folder_menu() {
     $driveService = connect_to_google_drive();
 
     try {
-        // Se inicia solo un contenedor level-wrapper en función del nivel
-        $output = ($level === 0) ? '<div class="level-0-wrapper">' : '<div class="level-1-wrapper">';
+        // Iniciar el contenedor adecuado según el nivel
+        if ($level === 0) {
+            $output = '<div class="level-0-wrapper">';
+        } elseif ($level === 1) {
+            $output = '<div class="level-1-wrapper">';
+        } else {
+            $output = '<div class="level-2-wrapper">'; // Nuevo contenedor para level-2
+        }
 
-        // Query para obtener carpetas según el nivel y folder_id
+        // Query para obtener carpetas de nivel específico
         $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
         $folders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
 
-        // Generar HTML para cada carpeta
         foreach ($folders->files as $folder) {
-            $folderLevelClass = ($level === 0) ? 'level-0' : 'level-1';
+            $folderLevelClass = 'level-' . $level;
             $output .= '<div class="subfolder ' . $folderLevelClass . ' clickable-folder" data-folder-id="' . esc_attr($folder->id) . '">';
             $output .= '<p>' . esc_html($folder->name) . '</p>';
             $output .= '</div>';
         }
 
-        $output .= '</div>'; // Cerrar el contenedor único de level-wrapper
+        $output .= '</div>'; // Cerrar el contenedor del nivel actual
         wp_send_json_success($output);
 
     } catch (Exception $e) {

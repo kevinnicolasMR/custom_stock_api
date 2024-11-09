@@ -1,68 +1,68 @@
 jQuery(document).ready(function($) {
+    // Función para eliminar la clase `hideContentMenu` de los elementos `level-2-wrapper`
+    function removeHideClassFromLevel2() {
+        $('.level-2-wrapper').each(function() {
+            if ($(this).hasClass('hideContentMenu')) {
+                $(this).removeClass('hideContentMenu');
+            }
+        });
+    }
+
+    // Configurar un MutationObserver para observar cambios en el contenedor principal
+    const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                removeHideClassFromLevel2();
+            }
+        }
+    });
+
+    // Observar cambios en el contenedor donde se añaden las carpetas
+    const targetNode = document.getElementById('drive-folders-container');
+    if (targetNode) {
+        observer.observe(targetNode, { childList: true, subtree: true });
+    }
+
+    // La función de clic para cargar carpetas y manejar la interacción sigue igual
     function handleFolderClick() {
-        $(document).on('click', '.subfolder.level-0', function(event) {
-            event.stopPropagation(); // Prevenir la propagación del evento
+        $(document).on('click', '.subfolder.level-0, .subfolder.level-1', function(event) {
+            event.stopPropagation(); // Evitar propagación
 
             const folderElement = $(this);
             const folderId = folderElement.data('folder-id');
+            const level = folderElement.hasClass('level-0') ? 1 : 2; // Determinar el nivel a cargar
 
-            // Verificar si ya hay otros submenús visibles, y ocultarlos
-            $('.subfolder.level-0').each(function() {
+            // Ocultar submenús de otras carpetas del mismo nivel
+            const folderClassToHide = level === 1 ? '.subfolder.level-0' : '.subfolder.level-1';
+            $(folderClassToHide).each(function() {
                 const otherFolderElement = $(this);
                 if (otherFolderElement[0] !== folderElement[0]) {
-                    // Ocultar submenú de otras carpetas level-0
-                    otherFolderElement.children('.level-1-wrapper').addClass('hideContentMenu');
+                    otherFolderElement.children('.level-' + (level + 1) + '-wrapper').addClass('hideContentMenu');
                 }
             });
 
-            // Verificar si el submenú ya está cargado, si no lo está, cargarlo
             if (folderElement.hasClass('loaded') || folderElement.data('isLoading')) {
-                toggleSubfolders(folderElement);  // Alternar la visibilidad si ya está cargado
+                toggleSubfolders(folderElement);
                 return;
             }
 
-            // Marcar como en carga para evitar solicitudes adicionales
             folderElement.data('isLoading', true);
             $('#loading-message').show();
 
-            // Cargar el contenido de la carpeta seleccionada
-            $.ajax({
-                url: ajax_object.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'get_folder_content',
-                    folder_id: folderId
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#folder-content').html(response.data); 
-                    } else {
-                        console.error(response.data);
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-                },
-                complete: function() {
-                    $('#loading-message').hide();
-                }
-            });
-
-            // Realizar solicitud AJAX para obtener las subcarpetas de nivel-1
+            // Solicitud AJAX para cargar subcarpetas del siguiente nivel
             $.ajax({
                 url: ajax_object.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'get_folder_menu',
                     folder_id: folderId,
-                    level: 1
+                    level: level
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Agregar subcarpetas e indicar que ya están cargadas
                         const newSubfolders = $(response.data);
-                        folderElement.append(newSubfolders).addClass('loaded'); // Añadir la clase "loaded"
-                        toggleSubfolders(folderElement); // Mostrar las subcarpetas recién cargadas
+                        folderElement.append(newSubfolders).addClass('loaded');
+                        toggleSubfolders(folderElement);
                     } else {
                         console.error('Error al cargar las subcarpetas:', response.data);
                     }
@@ -71,23 +71,22 @@ jQuery(document).ready(function($) {
                     console.error('Error en la solicitud AJAX para subcarpetas:', textStatus, errorThrown);
                 },
                 complete: function() {
-                    folderElement.data('isLoading', false); // Permitir nuevos clics
+                    folderElement.data('isLoading', false);
+                    $('#loading-message').hide();
                 }
             });
         });
 
-        // Manejar clics en level-1, impidiendo que la visibilidad cambie
-        $(document).on('click', '.subfolder.level-1', function(event) {
-            event.stopPropagation(); // Impedir que el clic en level-1 altere la visibilidad del level-0
+        // Evitar que los clics en `level-2` alteren la visibilidad de `level-1`
+        $(document).on('click', '.subfolder.level-2', function(event) {
+            event.stopPropagation(); // Impedir propagación
         });
     }
 
-    // Alternar la visibilidad de los submenús de level-1
     function toggleSubfolders(folderElement) {
-        const subfoldersWrapper = folderElement.children('.level-1-wrapper');
-        subfoldersWrapper.toggleClass('hideContentMenu'); // Alterna la clase hideContentMenu para ocultar o mostrar
+        const subfoldersWrapper = folderElement.children('.level-' + (parseInt(folderElement.attr('class').match(/level-(\d+)/)[1]) + 1) + '-wrapper');
+        subfoldersWrapper.toggleClass('hideContentMenu');
     }
 
-    // Inicializar el manejo de clics en las carpetas
     handleFolderClick();
 });
