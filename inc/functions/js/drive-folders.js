@@ -1,9 +1,7 @@
-// drive-folders.js
-
 jQuery(document).ready(function($) {
     const parentFolderId = ajax_object.parent_folder_id;
 
-    // Load folder menu for level-0 on page load
+    // Cargar el menú de carpetas para el nivel-0 en la carga de la página
     function loadDriveFolders(folderId, level) {
         $.ajax({
             url: ajax_object.ajax_url,
@@ -16,9 +14,10 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     if (level === 0) {
-                        $("#folder-menu").html(response.data); // Load level-0 folders into the menu
+                        $("#folder-menu").html(response.data); // Cargar carpetas de nivel-0 en el menú
                     } else {
-                        $(`[data-folder-id="${folderId}"]`).append(response.data); // Append level-1 subfolders to the clicked folder
+                        $(`[data-folder-id="${folderId}"]`).append(response.data); // Agregar subcarpetas nivel-1 a la carpeta clicada
+                        $(`[data-folder-id="${folderId}"]`).addClass("loaded"); // Marcar como cargado
                     }
                 } else {
                     $("#folder-menu").html("<p>Error al cargar el menú de carpetas.</p>");
@@ -26,11 +25,14 @@ jQuery(document).ready(function($) {
             },
             error: function() {
                 $("#folder-menu").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
+            },
+            complete: function() {
+                $(`[data-folder-id="${folderId}"]`).data("isLoading", false); // Permitir clics nuevamente
             }
         });
     }
 
-    // Load specific folder content on click
+    // Cargar contenido de la carpeta específica al hacer clic
     function loadFolderContent(folderId) {
         $.ajax({
             url: ajax_object.ajax_url,
@@ -57,22 +59,29 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // Load the folder menu for level-0 on page load
+    // Cargar el menú de carpetas nivel-0 al cargar la página
     loadDriveFolders(parentFolderId, 0);
 
-    // Load the content of the parent folder by default on page load
+    // Cargar el contenido de la carpeta principal al cargar la página
     loadFolderContent(parentFolderId);
 
-    // Handle click events on level-0 folder items to dynamically load level-1 folders
+    // Manejar clics en carpetas de nivel-0 para cargar dinámicamente las subcarpetas de nivel-1
     $(document).on("click", ".clickable-folder.level-0", function() {
         const folderId = $(this).data("folder-id");
-        // Check if level-1 folders are already loaded to avoid reloading
-        if ($(this).children(".level-1-wrapper").length === 0) {
-            loadDriveFolders(folderId, 1); // Load level-1 folders for the clicked level-0 folder
+
+        // Evitar duplicación: Si ya está cargando o ya tiene subcarpetas cargadas, salir
+        if ($(this).hasClass("loaded") || $(this).data("isLoading")) {
+            return;
         }
+
+        // Marcar como en proceso de carga para evitar duplicación de llamadas AJAX
+        $(this).data("isLoading", true);
+
+        // Cargar carpetas de nivel-1 solo si no están cargadas
+        loadDriveFolders(folderId, 1); // Cargar subcarpetas nivel-1
     });
 
-    // Handle click events on all folder items to load folder content
+    // Manejar clics en todos los elementos de carpeta para cargar el contenido de la carpeta
     $(document).on("click", ".clickable-folder", function() {
         const folderId = $(this).data("folder-id");
         loadFolderContent(folderId);

@@ -36,13 +36,14 @@ function get_folder_menu() {
     $driveService = connect_to_google_drive();
 
     try {
+        // Se inicia solo un contenedor level-wrapper en función del nivel
         $output = ($level === 0) ? '<div class="level-0-wrapper">' : '<div class="level-1-wrapper">';
-        
-        // Query to fetch folders based on level and folder_id
+
+        // Query para obtener carpetas según el nivel y folder_id
         $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
         $folders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
 
-        // Generate HTML for each folder
+        // Generar HTML para cada carpeta
         foreach ($folders->files as $folder) {
             $folderLevelClass = ($level === 0) ? 'level-0' : 'level-1';
             $output .= '<div class="subfolder ' . $folderLevelClass . ' clickable-folder" data-folder-id="' . esc_attr($folder->id) . '">';
@@ -50,13 +51,15 @@ function get_folder_menu() {
             $output .= '</div>';
         }
 
-        $output .= '</div>';
+        $output .= '</div>'; // Cerrar el contenedor único de level-wrapper
         wp_send_json_success($output);
 
     } catch (Exception $e) {
         wp_send_json_error('Error al obtener el menú de carpetas: ' . esc_html($e->getMessage()));
     }
 }
+
+
 add_action('wp_ajax_get_folder_menu', 'get_folder_menu');
 add_action('wp_ajax_nopriv_get_folder_menu', 'get_folder_menu');
 ?>
