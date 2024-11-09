@@ -13,11 +13,16 @@ function display_drive_folders_menu($atts) {
     // Output container for the Drive folders
     $output = '<div id="drive-folders-container">';
     $output .= '<div id="folder-menu"><p>Cargando menú de carpetas...</p></div>';
-    $output .= '<div id="folder-content"><div id="loading-message" style="text-align: center; display: none;">Cargando contenido de Google Drive...</div></div>';
+    // Mueve el div de carga fuera de #folder-content
+    $output .= '<div id="loading-message" style="text-align: center; display: none;">
+    <div id="loading-spinner"></div>
+    <p>Cargando contenido de Google Drive...</p></div>';
+    $output .= '<div id="folder-content"></div>';
     $output .= '</div>';
 
     return $output;
 }
+
 
 function enqueue_drive_folder_scripts() {
     // Encola el archivo JavaScript externo

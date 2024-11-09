@@ -68,7 +68,7 @@ jQuery(document).ready(function($) {
 
     function loadFolderContent(folderId) {
         console.log(`Cargando contenido para el folder ID: ${folderId}`);
-    
+        
         // Si es la carpeta madre, siempre cargamos su contenido
         if (folderId === currentParentFolderId) {
             console.log(`Cargando el contenido de la carpeta madre (ID: ${folderId}) nuevamente.`);
@@ -82,6 +82,11 @@ jQuery(document).ready(function($) {
             currentFolderId = folderId;
         }
     
+        // Mostrar el div de carga (al mismo nivel que #folder-content)
+        $("#loading-message").show();
+        // Ocultar #folder-content mientras se carga el contenido
+        $("#folder-content").css("display", "none");
+    
         $.ajax({
             url: ajax_object.ajax_url,
             method: "POST",
@@ -90,11 +95,9 @@ jQuery(document).ready(function($) {
                 folder_id: folderId
             },
             beforeSend: function() {
-                $("#loading-message").show();
-                $("#folder-content").html("");
+                $("#folder-content").html(""); // Limpiar el contenido actual
             },
             success: function(response) {
-                $("#loading-message").hide();
                 if (response.success) {
                     $("#folder-content").html(response.data);
                     console.log(`Contenido cargado para el folder ID: ${folderId}`);
@@ -105,9 +108,15 @@ jQuery(document).ready(function($) {
             },
             error: function() {
                 $("#folder-content").html("<p>Error de conexión. Inténtalo de nuevo.</p>");
+            },
+            complete: function() {
+                // Ocultar el mensaje de carga después de la carga y mostrar #folder-content
+                $("#loading-message").hide();
+                $("#folder-content").css("display", "block");
             }
         });
     }
+    
     
 
     // Manejo de clic en las carpetas de nivel-0
