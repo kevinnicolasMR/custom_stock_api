@@ -122,9 +122,10 @@ function get_folder_content() {
 
         if ($moreContentAvailable) {
             $output .= '<div class="button-load-more-container">';
-            $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '">Ver más contenido</button>';
+            $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '" data-offset="' . ($offset + $limit) . '">Ver más contenido</button>';
             $output .= '</div>';
         }
+        
 
         wp_send_json_success($output);
     } catch (Exception $e) {

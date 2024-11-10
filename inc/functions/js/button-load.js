@@ -19,10 +19,16 @@ jQuery(document).ready(function($) {
     });
 
     $(document).on('click', '.button-load-more-container #load-more', function() {
-        const folderId = $(this).data('folder-id'); 
-        const currentItems = $('.file-container > div').length; 
-        const limit = 10; 
         const loadMoreButton = $(this);
+        const folderId = loadMoreButton.data('folder-id');
+        const currentItems = $('.file-container > div').length;
+        const limit = 10;
+
+        // Agregar la clase para eliminar el borde y hacer el fondo transparente
+        loadMoreButton.addClass('button-loading');
+
+        // Reemplaza el texto del botón con el spinner
+        loadMoreButton.html('<div class="spinner"></div>');
 
         loadMoreButton.prop('disabled', true);
 
@@ -32,8 +38,8 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'get_folder_content',
                 folder_id: folderId,
-                offset: currentItems, 
-                limit: limit 
+                offset: currentItems,
+                limit: limit
             },
             success: function(response) {
                 if (response.success) {
@@ -52,15 +58,17 @@ jQuery(document).ready(function($) {
                     checkFilterStatus();
                 } else {
                     console.error(response.data);
-                    loadMoreButton.show().prop('disabled', false); 
+                    loadMoreButton.html('Ver más contenido').show().prop('disabled', false); // Restaura el texto y habilita el botón
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-                loadMoreButton.show().prop('disabled', false); 
+                loadMoreButton.html('Ver más contenido').show().prop('disabled', false); // Restaura el texto y habilita el botón
+            },
+            complete: function() {
+                // Quitar la clase después de que la carga haya terminado
+                loadMoreButton.removeClass('button-loading');
             }
         });
     });
 });
-
-    
