@@ -18,6 +18,7 @@ jQuery(document).ready(function ($) {
         if (imageItem.length > 0) {
             var imageUrl = imageItem.data('image-url');
             var fileId = imageItem.data('file-id');
+            var fileName = imageItem.attr('alt'); // Toma el nombre del archivo de la etiqueta alt
 
             var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800');
             var overlay = createOverlay();
@@ -29,6 +30,17 @@ jQuery(document).ready(function ($) {
             });
 
             overlay.append(img);
+
+            // Agrega el elemento con el nombre del archivo
+            var fileInfo = $('<div></div>').css({
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                color: 'white',
+                fontSize: '16px'
+            }).html('<p>' + fileName + '</p>');
+
+            overlay.append(fileInfo);
 
             var downloadUrl = createDownloadUrl(fileId);
             var downloadButton = createDownloadButton(downloadUrl);
@@ -49,6 +61,7 @@ jQuery(document).ready(function ($) {
             var videoUrl = videoItem.data('video-url');
             var videoFileId = extractFileIdFromUrl(videoUrl);
             var videoDownloadUrl = createDownloadUrl(videoFileId);
+            var fileName = videoItem.attr('alt'); // Toma el nombre del archivo de la etiqueta alt
 
             var overlay = createOverlay();
 
@@ -64,6 +77,17 @@ jQuery(document).ready(function ($) {
             });
 
             overlay.append(iframe);
+
+            // Agrega el elemento con el nombre del archivo
+            var fileInfo = $('<div></div>').css({
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                color: 'white',
+                fontSize: '16px'
+            }).html('<p>' + fileName + '</p>');
+
+            overlay.append(fileInfo);
 
             var closeButton = createCloseButton(overlay);
             var videoDownloadButton = createDownloadButton(videoDownloadUrl);
