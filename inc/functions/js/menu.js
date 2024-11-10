@@ -41,6 +41,16 @@ jQuery(document).ready(function($) {
                 }
             });
 
+            // NUEVO: Asegurarse de que solo un level-0 tenga visibles sus level-1
+            if (folderElement.hasClass('level-0')) {
+                // Si se hace clic en un folder de nivel 0, ocultar todos los otros level-1
+                $('.subfolder.level-0').each(function() {
+                    if ($(this)[0] !== folderElement[0]) {
+                        $(this).children('.level-1-wrapper').addClass('hideContentMenu');
+                    }
+                });
+            }
+
             if (folderElement.hasClass('loaded') || folderElement.data('isLoading')) {
                 toggleSubfolders(folderElement);
                 return;
