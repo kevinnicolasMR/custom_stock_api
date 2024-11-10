@@ -175,10 +175,26 @@ p{
 	height: 200px;
 	border: 1px solid;
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+	align-content: center;
+	
 }
+
+.file-item-pdf p{
+	width: 100%;
+	text-align: center;
+	margin-bottom: 20px;
+	color: black
+}
+
+.file-item-pdf p a{
+	border: 1px solid;
+}
+
+
 
 .file-item-font{	
 	width: 300px;
@@ -724,3 +740,4 @@ padding: 5px
 	color: white !important;
 	border: 2px solid black !important;
 }
+
