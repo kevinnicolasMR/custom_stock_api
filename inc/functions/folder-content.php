@@ -14,8 +14,11 @@ function get_folder_content() {
     $driveService = connect_to_google_drive();
 
     try {
-        $folder = $driveService->files->get($folderId, ['fields' => 'name']);
-        $folderName = $folder->name; 
+        $folder = $driveService->files->get($folderId, ['fields' => 'name, parents']);
+        $folderName = $folder->name;
+
+        // Obtener la ruta completa de la carpeta
+        $breadcrumb = get_breadcrumb_path($driveService, $folderId, $parentFolderId);
 
         $query = sprintf("'%s' in parents", $folderId);
         $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
@@ -54,6 +57,11 @@ function get_folder_content() {
             $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
             $output .= '<button id="search-button">Buscar</button>';
             $output .= '<button id="clear-button" style="display: none;">X</button>';
+            $output .= '</div>';
+
+            // Div para mostrar la ruta completa de la categoría
+             $output .= '<div class="current-category-name">';
+            $output .= $breadcrumb; // No uses `esc_html` aquí para permitir HTML
             $output .= '</div>';
         }
 
@@ -123,6 +131,25 @@ function get_folder_content() {
         wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
+
+function get_breadcrumb_path($driveService, $folderId, $parentFolderId) {
+    $breadcrumb = [];
+    while ($folderId !== $parentFolderId) {
+        $folder = $driveService->files->get($folderId, ['fields' => 'name, parents']);
+        array_unshift($breadcrumb, '<p class="breadcrumb-text">' . esc_html($folder->name) . '</p>');
+        if (!isset($folder->parents) || empty($folder->parents)) {
+            break;
+        }
+        $folderId = $folder->parents[0];
+    }
+
+    // Añadir la carpeta madre
+    $rootFolder = $driveService->files->get($parentFolderId, ['fields' => 'name']);
+    array_unshift($breadcrumb, '<p class="breadcrumb-text">' . esc_html($rootFolder->name) . '</p>');
+
+    return implode(' >> ', $breadcrumb); // Concatenar con ' >> '
+}
+
 
 add_action('wp_ajax_get_folder_content', 'get_folder_content');
 add_action('wp_ajax_nopriv_get_folder_content', 'get_folder_content');
