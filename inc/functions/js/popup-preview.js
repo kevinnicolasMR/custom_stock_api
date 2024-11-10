@@ -1,73 +1,80 @@
-// Funcionalidad del Popup al momento de hacer click en las imagenes y videos
-
 jQuery(document).ready(function ($) {
 
-    $('#folder-content').on('click', '.image-item', function (event) {
+    // Evento para capturar el clic en el área de hover para imágenes y videos
+    $('#folder-content').on('click', '.hover-general-information-img, .hover-general-information-video', function (event) {
+        // Verifica si el clic fue en el botón de descarga
+        var isDownloadButton = $(event.target).closest('.download-button').length > 0;
+
+        // Si el clic fue en el botón de descarga, permite que el evento continúe y no se muestra el popup
+        if (isDownloadButton) {
+            return;
+        }
+
+        // Si no es un botón de descarga, se previene el comportamiento por defecto y se muestra el popup
         event.preventDefault();
 
-        var imageUrl = $(this).data('image-url'); 
-        var fileId = $(this).data('file-id'); 
+        // Verifica si se trata de un archivo de imagen
+        var imageItem = $(this).closest('.file-item-img').find('.image-item');
+        if (imageItem.length > 0) {
+            var imageUrl = imageItem.data('image-url');
+            var fileId = imageItem.data('file-id');
 
-        var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800'); 
+            var highResImageUrl = imageUrl.replace(/=s\d+/, '=s800');
+            var overlay = createOverlay();
 
-        var overlay = createOverlay();
+            var img = $('<img>').attr('src', highResImageUrl).css({
+                maxWidth: '90%',
+                maxHeight: '90%',
+                borderRadius: '25px'
+            });
 
-        var img = $('<img>').attr('src', highResImageUrl).css({
-            maxWidth: '90%',
-            maxHeight: '90%',
-            borderRadius: '25px'
-        });
+            overlay.append(img);
 
-        overlay.append(img);
+            var downloadUrl = createDownloadUrl(fileId);
+            var downloadButton = createDownloadButton(downloadUrl);
 
-        var downloadUrl = createDownloadUrl(fileId); 
-        var downloadButton = createDownloadButton(downloadUrl);
+            var closeButton = createCloseButton(overlay);
 
-        var closeButton = createCloseButton(overlay);
+            overlay.append(downloadButton).append(closeButton);
+            $('body').append(overlay);
 
-        overlay.append(downloadButton).append(closeButton);
-        $('body').append(overlay);
+            img.on('click', function (event) {
+                event.stopPropagation();
+            });
+        }
 
-        img.on('click', function (event) {
-            event.stopPropagation();
-        });
-    });
+        // Verifica si se trata de un archivo de video
+        var videoItem = $(this).closest('.file-item-video').find('.video-item');
+        if (videoItem.length > 0) {
+            var videoUrl = videoItem.data('video-url');
+            var videoFileId = extractFileIdFromUrl(videoUrl);
+            var videoDownloadUrl = createDownloadUrl(videoFileId);
 
-    $('#folder-content').on('click', '.video-item', function (event) {
-        event.preventDefault();
+            var overlay = createOverlay();
 
-        var videoUrl = $(this).data('video-url'); 
+            var iframe = $('<iframe>', {
+                src: videoUrl,
+                width: '60%',
+                height: '80%',
+                frameborder: '0',
+                allow: 'autoplay; encrypted-media',
+                allowfullscreen: true
+            }).css({
+                borderRadius: '25px'
+            });
 
-        console.log("URL del video:", videoUrl);
+            overlay.append(iframe);
 
-        var videoFileId = extractFileIdFromUrl(videoUrl); 
-        var videoDownloadUrl = createDownloadUrl(videoFileId); 
+            var closeButton = createCloseButton(overlay);
+            var videoDownloadButton = createDownloadButton(videoDownloadUrl);
 
-        var overlay = createOverlay();
-
-        var iframe = $('<iframe>', {
-            src: videoUrl,
-            width: '60%',
-            height: '80%',
-            frameborder: '0',
-            allow: 'autoplay; encrypted-media',
-            allowfullscreen: true
-        }).css({
-            borderRadius: '25px'
-        });
-
-        overlay.append(iframe);
-
-        var closeButton = createCloseButton(overlay);
-
-        var videoDownloadButton = createDownloadButton(videoDownloadUrl); 
-
-        overlay.append(videoDownloadButton).append(closeButton);
-        $('body').append(overlay);
+            overlay.append(videoDownloadButton).append(closeButton);
+            $('body').append(overlay);
+        }
     });
 
     function createDownloadUrl(fileId) {
-        return 'https://drive.google.com/uc?export=download&id=' + fileId; 
+        return 'https://drive.google.com/uc?export=download&id=' + fileId;
     }
 
     function extractFileIdFromUrl(url) {
