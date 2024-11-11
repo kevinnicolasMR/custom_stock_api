@@ -830,4 +830,20 @@ padding: 5px
 		width: 100% !important
 	}
 	
+	.popwupOverlay-KM iframe{
+		width: 80% !important;
+		height: 50% !important
+	}
+	.popwupOverlay-KM div{
+		width: 50%;
+	}
+	.popwupOverlay-KM div p{
+		font-size: 13px
+	}
+.popwupOverlay-KM a{
+		font-size: 15px !important;
+	top: 25px !important;
+	padding: 5px !important;
+	}
+	
 }

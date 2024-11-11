@@ -107,7 +107,7 @@ jQuery(document).ready(function ($) {
     }
 
     function createOverlay() {
-        var overlay = $('<div></div>').css({
+        var overlay = $('<div class="popwupOverlay-KM"></div>').css({
             position: 'fixed',
             top: 0,
             left: 0,
