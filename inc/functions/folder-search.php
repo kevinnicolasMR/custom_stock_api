@@ -12,16 +12,27 @@ function display_drive_folders_menu($atts) {
 
     // Output container for the Drive folders
     $output = '<div id="drive-folders-container">';
+    
+    // Añadir un botón arriba del menú
+    $output .= '<div id="top-menu-button">';
+    $output .= '<p>Menu de recursos disponibles</p>';
+    $output .= '<button id="menu-toggle"><i class="fas fa-bars"></i></button>';  // Este botón tiene un id de "menu-toggle"
+    $output .= '</div>';
+
+    // Menú de carpetas
     $output .= '<div id="folder-menu"><p>Cargando menú de carpetas...</p></div>';
+    
     // Mueve el div de carga fuera de #folder-content
     $output .= '<div id="loading-message" style="text-align: center; display: none;">
     <div id="loading-spinner"></div>
     <p>Cargando contenido de Google Drive...</p></div>';
+    
     $output .= '<div id="folder-content"></div>';
     $output .= '</div>';
 
     return $output;
 }
+
 
 
 function enqueue_drive_folder_scripts() {

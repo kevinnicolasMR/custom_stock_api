@@ -99,4 +99,28 @@ jQuery(document).ready(function($) {
     }
 
     handleFolderClick();
+
+    function toggleMenu() {
+        var menu = document.getElementById('folder-menu');
+        var button = document.getElementById('menu-toggle');
+
+        // Comprobar el estado actual del menú
+        if (menu.style.height === '0px') {
+            // Mostrar el menú con height: auto y padding: 70px 20px 20px 20px
+            menu.style.height = 'auto';
+            menu.style.padding = '70px 20px 20px 20px';
+            button.innerHTML = 'Cerrar'; // Cambiar el texto del botón
+        } else {
+            // Ocultar el menú con height: 0px y padding: 0px
+            menu.style.height = '0px';
+            menu.style.padding = '0px';
+            button.innerHTML = '<i class="fas fa-bars"></i>'; // Cambiar el texto del botón
+        }
+    }
+
+    // Asegúrate de que el botón llame a la función correctamente
+    $('#menu-toggle').on('click', function() {
+        toggleMenu(); // Llamar a la función toggleMenu cuando se haga clic
+    });
+    
 });

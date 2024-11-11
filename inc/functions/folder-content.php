@@ -54,7 +54,7 @@ function get_folder_content() {
 
         if ($offset === 0) {
             $output .= '<div class="search-container">';
-            $output .= '<input type="text" id="search-input" placeholder="Escribe el nombre del archivo que estás buscando">';
+            $output .= '<input type="text" id="search-input" placeholder="¿Qué archivo buscas?">';
             $output .= '<button id="search-button">Buscar</button>';
             $output .= '<button id="clear-button" style="display: none;">X</button>';
             $output .= '</div>';
