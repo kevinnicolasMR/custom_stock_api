@@ -59,9 +59,8 @@ function get_folder_content() {
             $output .= '<button id="clear-button" style="display: none;">X</button>';
             $output .= '</div>';
 
-            // Div para mostrar la ruta completa de la categoría
              $output .= '<div class="current-category-name">';
-            $output .= $breadcrumb; // No uses `esc_html` aquí para permitir HTML
+            $output .= $breadcrumb; 
             $output .= '</div>';
         }
 
@@ -144,7 +143,6 @@ function get_breadcrumb_path($driveService, $folderId, $parentFolderId) {
         $folderId = $folder->parents[0];
     }
 
-    // Añadir la carpeta madre
     $rootFolder = $driveService->files->get($parentFolderId, ['fields' => 'name']);
     array_unshift($breadcrumb, '<p class="breadcrumb-text">' . esc_html($rootFolder->name) . '</p>');
 
