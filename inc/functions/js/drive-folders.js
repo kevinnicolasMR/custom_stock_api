@@ -23,7 +23,6 @@ jQuery(document).ready(function($) {
 
     // Función para limpiar las carpetas cargadas cuando se navega
     function clearLoadedFolders() {
-        console.log("Limpiando las carpetas cargadas...");
         for (let key in loadedFolders) {
             if (loadedFolders.hasOwnProperty(key)) {
                 delete loadedFolders[key]; // Eliminar el folder ID
@@ -33,13 +32,8 @@ jQuery(document).ready(function($) {
 
     // Función para cargar las carpetas del Drive
     function loadDriveFolders(folderId, level) {
-        console.log(`Cargando carpetas para el folder ID: ${folderId}, nivel: ${level}`);
     
-        if (isFolderLoaded(folderId)) {
-            console.log(`La carpeta ${folderId} ya está cargada. No se realiza la solicitud.`);
-            return;
-        }
-    
+           
         $.ajax({
             url: ajax_object.ajax_url,
             method: 'POST',
@@ -74,15 +68,8 @@ jQuery(document).ready(function($) {
 
     // Función para cargar el contenido de una carpeta
     function loadFolderContent(folderId) {
-        console.log(`Cargando contenido para el folder ID: ${folderId}`);
         
-        if (folderId === currentParentFolderId) {
-            console.log(`Cargando el contenido de la carpeta madre (ID: ${folderId}) nuevamente.`);
-        } else if (folderId === currentFolderId) {
-            console.log(`El contenido de la carpeta ${folderId} ya está cargado. No se recarga.`);
-            return; // No recargar si ya es la misma carpeta
-        }
-    
+           
         currentFolderId = folderId; // Actualiza el ID actual solo si no es la carpeta madre
     
         // Limpiar las carpetas cargadas antes de cargar el contenido
@@ -104,7 +91,6 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     $("#folder-content").html(response.data);
-                    console.log(`Contenido cargado para el folder ID: ${folderId}`);
                     markFolderAsLoaded(folderId); // Marca la carpeta como cargada
                     highlightCurrentFolder(); // Llama la función para resaltar la carpeta actual en el menú
                 } else {
@@ -138,7 +124,6 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".clickable-folder.level-0", function() {
         const folderId = $(this).data("folder-id");
 
-        console.log(`Clic en la carpeta de nivel-0, folder ID: ${folderId}`);
 
         if ($(this).hasClass("loaded") || $(this).data("isLoading")) {
             return;
@@ -152,12 +137,9 @@ jQuery(document).ready(function($) {
     $(document).on("click", ".clickable-folder", function() {
         const folderId = $(this).data("folder-id");
 
-        console.log(`Clic en cualquier carpeta para cargar contenido, folder ID: ${folderId}`);
-
         loadFolderContent(folderId); // Cargar contenido de la carpeta
     });
 
-    console.log(`Cargando el menú y contenido para la carpeta madre con ID: ${currentParentFolderId}`);
     loadDriveFolders(currentParentFolderId, 0); // Cargar el menú de la carpeta madre (nivel-0)
     loadFolderContent(currentParentFolderId); // Cargar el contenido de la carpeta madre desde el inicio
 });

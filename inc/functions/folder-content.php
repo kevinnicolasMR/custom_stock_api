@@ -20,9 +20,24 @@ function get_folder_content() {
         // Obtener la ruta completa de la carpeta
         $breadcrumb = get_breadcrumb_path($driveService, $folderId, $parentFolderId);
 
-        $query = sprintf("'%s' in parents", $folderId);
-        $files = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)'));
+        // Buscar la subcarpeta de miniaturas dentro de la carpeta actual
+        $thumbnailFolderId = null;
+        $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder' and name = 'miniaturas'", $folderId);
+        $thumbnailFolders = $driveService->files->listFiles(['q' => $query, 'fields' => 'files(id)']);
+        
+        // Añadir console.log para verificar si la carpeta "miniaturas" fue encontrada
+        $output = '';
+        if (count($thumbnailFolders->files) > 0) {
+            $thumbnailFolderId = $thumbnailFolders->files[0]->id;
+        } else {
+            $output .= "<script>console.log('Carpeta miniaturas NO encontrada en la carpeta actual.');</script>";
+        }
 
+        // Obtener archivos de la carpeta actual
+        $query = sprintf("'%s' in parents", $folderId);
+        $files = $driveService->files->listFiles(['q' => $query, 'fields' => 'files(id, name, mimeType, thumbnailLink)']);
+
+        // Clasificar archivos por tipo
         $folders = [];
         $videos = [];
         $images = [];
@@ -43,14 +58,14 @@ function get_folder_content() {
                 $audios[] = $file;
             } elseif ($mimeType === 'application/pdf') {
                 $pdfs[] = $file;
-            } elseif ($mimeType === 'font/otf' || $mimeType === 'font/ttf' || $mimeType === 'application/x-font-ttf' || $mimeType === 'application/x-font-otf') {
+            } elseif (strpos($mimeType, 'font/') === 0) {
                 $fonts[] = $file;
             }
         }
 
         $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
         $limit = 10; 
-        $output = '';
+        $fileContent = ''; 
 
         if ($offset === 0) {
             $output .= '<div class="search-container">';
@@ -71,20 +86,41 @@ function get_folder_content() {
 
         $fileContent = ''; 
 
-        foreach ($folders as $folder) {
-            if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $fileContent .= render_folder_template($folder);
-            }
-            $fileCount++;
-        }
+        // Procesar carpetas
+$fileCount = 0;
+foreach ($folders as $folder) {
+    // Verificar si el nombre de la carpeta es "miniaturas" y omitirla si es así
+    if (strtolower($folder->name) === 'miniaturas') {
+        continue;
+    }
+    
+    if ($fileCount >= $offset && $fileCount < $offset + $limit) {
+        $fileContent .= render_folder_template($folder);
+    }
+    $fileCount++;
+}
 
+
+        // Procesar videos con miniaturas personalizadas
         foreach ($videos as $video) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
-                $fileContent .= render_video_template($video);
+$customThumbnail = null;
+if ($thumbnailFolderId) {
+    $thumbnailQuery = sprintf("'%s' in parents and name = '%s.jpg'", $thumbnailFolderId, pathinfo($video->name, PATHINFO_FILENAME));
+    $customThumbnails = $driveService->files->listFiles(['q' => $thumbnailQuery, 'fields' => 'files(id, name, thumbnailLink)']);
+
+    if (count($customThumbnails->files) > 0) {
+        $customThumbnail = $customThumbnails->files[0]->thumbnailLink;
+    } else {
+        $output .= "<script>console.log('No se encontró miniatura personalizada para el video: " . esc_js($video->name) . "');</script>";
+    }
+}
+                $fileContent .= render_video_template($video, $customThumbnail);
             }
             $fileCount++;
         }
 
+        // Procesar imágenes
         foreach ($images as $image) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_image_template($image);
@@ -92,6 +128,7 @@ function get_folder_content() {
             $fileCount++;
         }
 
+        // Procesar audios
         foreach ($audios as $audio) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_audio_template($audio, $folderName); 
@@ -99,6 +136,7 @@ function get_folder_content() {
             $fileCount++;
         }
 
+        // Procesar PDFs
         foreach ($pdfs as $pdf) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_pdf_template($pdf);
@@ -106,6 +144,7 @@ function get_folder_content() {
             $fileCount++;
         }
 
+        // Procesar fuentes
         foreach ($fonts as $font) {
             if ($fileCount >= $offset && $fileCount < $offset + $limit) {
                 $fileContent .= render_font_template($font);
@@ -119,18 +158,22 @@ function get_folder_content() {
             $output = $fileContent;
         }
 
+        $totalFilesQueried = $driveService->files->listFiles(['q' => $query, 'pageSize' => ($offset + $limit + 1), 'fields' => 'files(id)']);
+        $moreContentAvailable = count($totalFilesQueried->files) > ($offset + $limit);
+
         if ($moreContentAvailable) {
             $output .= '<div class="button-load-more-container">';
             $output .= '<button id="load-more" data-folder-id="' . esc_attr($folderId) . '" data-offset="' . ($offset + $limit) . '">Ver más contenido</button>';
             $output .= '</div>';
         }
-        
 
         wp_send_json_success($output);
     } catch (Exception $e) {
         wp_send_json_error('Error al obtener el contenido de la carpeta: ' . esc_html($e->getMessage()));
     }
 }
+
+
 
 function get_breadcrumb_path($driveService, $folderId, $parentFolderId) {
     $breadcrumb = [];

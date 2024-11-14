@@ -52,7 +52,6 @@ function get_folder_menu() {
     $driveService = connect_to_google_drive();
 
     try {
-        // Iniciar el contenedor adecuado según el nivel
         if ($level === 0) {
             $output = '<div class="level-0-wrapper">';
         } elseif ($level === 1) {
@@ -61,11 +60,15 @@ function get_folder_menu() {
             $output = '<div class="level-2-wrapper">'; // Nuevo contenedor para level-2
         }
 
-        // Query para obtener carpetas de nivel específico
         $query = sprintf("'%s' in parents and mimeType = 'application/vnd.google-apps.folder'", $folderId);
         $folders = $driveService->files->listFiles(array('q' => $query, 'fields' => 'files(id, name)'));
 
         foreach ($folders->files as $folder) {
+            // OMITIR carpetas llamadas "miniaturas"
+            if (strtolower($folder->name) === 'miniaturas') {
+                continue;
+            }
+
             $folderLevelClass = 'level-' . $level;
             $output .= '<div class="subfolder ' . $folderLevelClass . ' clickable-folder" data-folder-id="' . esc_attr($folder->id) . '">';
             $output .= '<p>' . esc_html($folder->name) . '</p>';

@@ -70,6 +70,7 @@ p{
 	cursor: pointer;
 	color: black;
 	font-weight: 400;
+	margin: 5px 0px !important
 }
 
 .level-0 p:hover{
@@ -92,7 +93,8 @@ p{
 }
 
 .level-1 p{
-	font-weight: 400
+	font-weight: 400;
+	margin: 5px 0px !important;
 }
 
 .level-1 p:hover{
@@ -112,6 +114,11 @@ p{
 	padding-left: 0px;
 	cursor: pointer;
 	color: black
+}
+
+
+.level-2{
+	margin: 5px 0px !important;
 }
 
 .file-item-container{
@@ -197,6 +204,15 @@ p{
 
 .file-item-pdf p a{
 	border: 1px solid;
+	border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+	padding: 10px;
+}
+
+.file-item-pdf p a:hover{
+ background: black;
+ color: white;
 }
 
 
@@ -616,6 +632,7 @@ p{
 	flex-wrap: wrap;
 	opacity: 0;
 	transition: all 0.3s ease;
+	align-content: space-between;
 
 }
 
@@ -623,6 +640,10 @@ p{
 	opacity: 1
 }
 
+
+.hover-general-information-img .download-icon{
+ height: 20%;
+}
 
 .img-title-preview-img{
 	width: 100%;
@@ -637,6 +658,12 @@ p{
 	font-weight: 700
 }
 
+
+.hover-general-information-img .download-icon a{
+	padding: 10px 12px;
+    margin: 5px;
+    border-radius: 3px;
+   }
 
 .download-icon{
 	width: 100%;
@@ -675,6 +702,7 @@ padding: 5px
 	flex-wrap: wrap;
 	opacity: 0;
 	transition: all 0.3s ease;
+	align-content: space-between;
 }
 
 .hover-general-information-video:hover{
@@ -684,18 +712,19 @@ padding: 5px
 
 .video-title-preview-video{
 	width: 100%;
-	height: 49%;
+	height: 29%;
 	padding: 10px;
 }
 
 .video-title-preview-video p{
-	color: white
+	color: white;
+	margin: 0px;
 }
 
 
 .video-download-box{
 	width: 100%;
-	height: 49%;
+	height: 20%;
 	display: flex;
 	justify-content: flex-end;
 align-items: flex-end;
@@ -704,6 +733,9 @@ padding: 5px
 
  .video-download-box a{
 	background: rgb(255,255, 255,0.6) !important;
+	padding: 10px 12px;
+    border-radius: 3px;
+    margin: 5px;
 }
 
 .video-download-box a:hover{
@@ -763,6 +795,28 @@ padding: 5px
 }
 
 
+.popwupOverlay-KM iframe{
+	width: 50% !important;
+	height: 70% !important;
+	margin-top: 60px;
+}
+.popwupOverlay-KM div{
+	width: 50%;
+	top: 30px !important;
+}
+.popwupOverlay-KM div p{
+	font-size: 13px
+}
+.popwupOverlay-KM a{
+	font-size: 15px !important;
+top: 50px !important;
+padding: 5px !important;
+}
+.popwupOverlay-KM img{
+  margin-top: 30px;
+}
+
+
 @media screen and (max-width: 768px) {
 	#drive-folders-container{
 		display: flex;
@@ -783,6 +837,7 @@ padding: 5px
 		margin: 70px 0px 0px 0px;
 		width: 100%;
 		z-index: 1000;
+		padding: 0px 20px;
 	}
 	.file-item-audio{
 		width: 100% !important
@@ -792,6 +847,7 @@ padding: 5px
 	}
 	.current-category-name{
 		flex-wrap:wrap;
+		align-items: center;
 	}
 	.breadcrumb-text{
 		font-size: 12px;
@@ -808,7 +864,7 @@ padding: 5px
 		border-bottom: 1px solid;
 		width: 100%;
 		height: 50px;
-		padding: 20px;
+		padding: 5px;
 		justify-content: flex-end;
     align-items: center;
 		background: white;
@@ -817,7 +873,12 @@ padding: 5px
 		border: none;
 		background: none;
 		cursor: pointer;
-		width: 10%
+		width: 10%;
+		border: none !important;
+
+	}
+	#menu-toggle i{
+		border: none !important;
 	}
 	#top-menu-button p{
 		width: 90%;
@@ -836,14 +897,19 @@ padding: 5px
 	}
 	.popwupOverlay-KM div{
 		width: 50%;
+		top: 10px !important;
 	}
 	.popwupOverlay-KM div p{
 		font-size: 13px
 	}
 .popwupOverlay-KM a{
 		font-size: 15px !important;
-	top: 25px !important;
+	top: 20px !important;
 	padding: 5px !important;
 	}
+	.popwupOverlay-KM span{
+		top: -5px !important
+	}
+
 	
 }
