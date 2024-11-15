@@ -30,14 +30,16 @@ jQuery(document).ready(function($) {
 
     // Función para filtrar las carpetas del contenido
     function filterContentFolders() {
-        // Filtra las carpetas cargadas en el contenido
-        $('#folder-content .clickable-folder').each(function() {
-            const folderId = $(this).data('folder-id');
-            if (folderId && !allIDsArray.includes(folderId)) {
-                $(this).remove(); // Elimina las carpetas que no coinciden con los IDs en all_IDs_ShortCode
-            }
-        });
-        console.log("Contenido filtrado según all_IDs_ShortCode.");
+        // Solo aplicar filtrado en la carpeta madre
+        if (currentFolderId === currentParentFolderId) {
+            $('#folder-content .clickable-folder').each(function() {
+                const folderId = $(this).data('folder-id');
+                if (folderId && !allIDsArray.includes(folderId)) {
+                    $(this).remove(); // Elimina las carpetas que no coinciden con los IDs en all_IDs_ShortCode
+                }
+            });
+            console.log("Contenido filtrado según all_IDs_ShortCode.");
+        }
     }
 
     // Función para verificar si una carpeta ya está cargada
@@ -122,7 +124,7 @@ jQuery(document).ready(function($) {
                     $("#folder-content").html(response.data);
                     markFolderAsLoaded(folderId); // Marca la carpeta como cargada
                     highlightCurrentFolder(); // Llama la función para resaltar la carpeta actual en el menú
-                    filterContentFolders(); // Filtra las carpetas del contenido
+                    filterContentFolders(); // Filtra las carpetas del contenido solo si estamos en la carpeta madre
                 } else {
                     $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                 }
