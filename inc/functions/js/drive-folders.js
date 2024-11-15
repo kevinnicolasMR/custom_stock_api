@@ -8,7 +8,7 @@ jQuery(document).ready(function($) {
     const allIDsArray = allIDsShortcode ? allIDsShortcode.split(',') : [];
     console.log("IDs en all_IDs_ShortCode:", allIDsArray);
 
-    // Función para capturar y mostrar IDs de level-0
+    // Función para capturar y mostrar los IDs de level-0
     function logLevel0Ids() {
         const level0Ids = [];
         $('.clickable-folder.level-0').each(function() {
@@ -28,9 +28,16 @@ jQuery(document).ready(function($) {
         console.log("IDs que hacen match entre level-0 y all_IDs_ShortCode:", matchingIds);
     }
 
-    if (!currentParentFolderId) {
-        console.error('El ID de la carpeta madre no está definido.');
-        return; // Si no hay ID de la carpeta madre, no se ejecuta más código
+    // Función para filtrar las carpetas del contenido
+    function filterContentFolders() {
+        // Filtra las carpetas cargadas en el contenido
+        $('#folder-content .clickable-folder').each(function() {
+            const folderId = $(this).data('folder-id');
+            if (folderId && !allIDsArray.includes(folderId)) {
+                $(this).remove(); // Elimina las carpetas que no coinciden con los IDs en all_IDs_ShortCode
+            }
+        });
+        console.log("Contenido filtrado según all_IDs_ShortCode.");
     }
 
     // Función para verificar si una carpeta ya está cargada
@@ -115,6 +122,7 @@ jQuery(document).ready(function($) {
                     $("#folder-content").html(response.data);
                     markFolderAsLoaded(folderId); // Marca la carpeta como cargada
                     highlightCurrentFolder(); // Llama la función para resaltar la carpeta actual en el menú
+                    filterContentFolders(); // Filtra las carpetas del contenido
                 } else {
                     $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                 }
