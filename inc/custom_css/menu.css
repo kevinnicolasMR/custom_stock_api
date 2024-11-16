@@ -144,12 +144,14 @@ p{
 .file-item-video img{
 	width: 100%;
 	height: 100% !important;
+	object-fit: cover !important;
 }
 
 
 .image-item{
 	width: 300px !important;
-	height: 100% !important;	
+	height: 100% !important;
+	object-fit: cover !important;	
 }
 
 

@@ -64,6 +64,15 @@ jQuery(document).ready(function($) {
         }
     }
 
+    // Función para verificar el estado del botón "Ver más"
+    function toggleLoadMoreButton() {
+        if (currentFolderId === currentParentFolderId) {
+            $('.button-load-more-container').hide(); // Ocultar el botón si estamos en la carpeta madre
+        } else {
+            $('.button-load-more-container').show(); // Mostrar el botón si no estamos en la carpeta madre
+        }
+    }
+
     // Función para cargar las carpetas del Drive
     function loadDriveFolders(folderId, level) {
         $.ajax({
@@ -101,7 +110,7 @@ jQuery(document).ready(function($) {
 
     // Función para cargar el contenido de una carpeta
     function loadFolderContent(folderId) {
-        currentFolderId = folderId; // Actualiza el ID actual solo si no es la carpeta madre
+        currentFolderId = folderId; // Actualiza el ID actual
 
         // Limpiar las carpetas cargadas antes de cargar el contenido
         clearLoadedFolders();
@@ -125,6 +134,7 @@ jQuery(document).ready(function($) {
                     markFolderAsLoaded(folderId); // Marca la carpeta como cargada
                     highlightCurrentFolder(); // Llama la función para resaltar la carpeta actual en el menú
                     filterContentFolders(); // Filtra las carpetas del contenido solo si estamos en la carpeta madre
+                    toggleLoadMoreButton(); // Verifica si el botón debe mostrarse
                 } else {
                     $("#folder-content").html("<p>Error al cargar el contenido.</p>");
                 }
@@ -141,15 +151,9 @@ jQuery(document).ready(function($) {
 
     // Función para resaltar la carpeta actual en el menú
     function highlightCurrentFolder() {
-        // Remueve el estilo de cualquier carpeta previamente resaltada
-        $('.clickable-folder p').css({
-            'font-weight': ''
-        });
+        $('.clickable-folder p').css({ 'font-weight': '' });
 
-        // Aplica un borde y grosor de fuente al primer <p> de la carpeta actual en el menú
-        $(`.clickable-folder[data-folder-id="${currentFolderId}"] > p:first-child`).css({
-            'font-weight': '800'
-        });
+        $(`.clickable-folder[data-folder-id="${currentFolderId}"] > p:first-child`).css({ 'font-weight': '800' });
     }
 
     // Eventos de clic
@@ -163,10 +167,8 @@ jQuery(document).ready(function($) {
         loadDriveFolders(folderId, 1); // Cargar subcarpetas nivel-1
     });
 
-    // Cuando se hace clic en cualquier carpeta para cargar su contenido
     $(document).on("click", ".clickable-folder", function() {
         const folderId = $(this).data("folder-id");
-
         loadFolderContent(folderId); // Cargar contenido de la carpeta
     });
 
